@@ -1,0 +1,106 @@
+{
+  "users": [
+    {
+      "id": "usr_owner_01",
+      "name": "Apparao Naidu (యజమాని / Owner)",
+      "username": "owner@tiffin.local",
+      "passwordHash": "$2a$12$e80yq7.6wN31nL1p1i6m1OSK/3l519fW.4Gk7Z725Vd/d8c1yR0W2",
+      "role": "OWNER",
+      "active": true
+    },
+    {
+      "id": "usr_admin_01",
+      "name": "Sita Devi (నిర్వాహకురాలు / Admin)",
+      "username": "admin@tiffin.local",
+      "passwordHash": "$2a$12$e80yq7.6wN31nL1p1i6m1OSK/3l519fW.4Gk7Z725Vd/d8c1yR0W2",
+      "role": "ADMIN",
+      "active": true
+    },
+    {
+      "id": "usr_family_01",
+      "name": "Kalyan (కుటుంబ సభ్యుడు / Family Member)",
+      "username": "kalyan@tiffin.local",
+      "passwordHash": "$2a$12$e80yq7.6wN31nL1p1i6m1OSK/3l519fW.4Gk7Z725Vd/d8c1yR0W2",
+      "role": "FAMILY_MEMBER",
+      "active": true
+    }
+  ],
+  "customers": [
+    {
+      "id": "cust_ramesh_auto",
+      "name": "Ramesh (Auto)",
+      "normalizedName": "ramesh auto",
+      "aliases": ["రమేష్", "రామేష్", "Auto Ramesh", "ఆటో రమేష్"],
+      "phoneNumber": "9848011223",
+      "notes": "Bus stand auto stand driver. Morning breakfast daily.",
+      "status": "ACTIVE",
+      "initialDebtPaise": 25000
+    },
+    {
+      "id": "cust_ramesh_teacher",
+      "name": "Ramesh (Master)",
+      "normalizedName": "ramesh master",
+      "aliases": ["రమేష్ మాస్టారు", "Teacher Ramesh", "Ramesh Teacher"],
+      "phoneNumber": "9988776655",
+      "notes": "Govt High School teacher. Monthly settlement.",
+      "status": "ACTIVE",
+      "initialDebtPaise": 15000
+    },
+    {
+      "id": "cust_suresh_tailor",
+      "name": "Suresh (Tailor)",
+      "normalizedName": "suresh tailor",
+      "aliases": ["సురేష్", "టైలర్ సురేష్"],
+      "phoneNumber": "9440123456",
+      "notes": "Opposite cloth shop tailor.",
+      "status": "ACTIVE",
+      "initialDebtPaise": 5000
+    },
+    {
+      "id": "cust_venkat_electrician",
+      "name": "Venkatesh (Electrician)",
+      "normalizedName": "venkatesh electrician",
+      "aliases": ["వెంకటేష్", "వెంకట్"],
+      "phoneNumber": "9866123789",
+      "notes": "Weekly payment.",
+      "status": "ACTIVE",
+      "initialDebtPaise": 32000
+    },
+    {
+      "id": "cust_laxmi_vendor",
+      "name": "Laxmi (Flower Vendor)",
+      "normalizedName": "laxmi flower vendor",
+      "aliases": ["లక్ష్మి", "పూల లక్ష్మి"],
+      "phoneNumber": "9123456780",
+      "notes": "Evening snacks & tea.",
+      "status": "ACTIVE",
+      "initialDebtPaise": 12000
+    }
+  ],
+  "sampleTransactions": [
+    {
+      "customerId": "cust_ramesh_auto",
+      "type": "OPENING_BALANCE",
+      "amountPaise": 25000,
+      "balanceEffectPaise": 25000,
+      "description": "Notebook Page 12 - Migrated Balance",
+      "effectiveAt": "2026-10-01T06:00:00Z"
+    },
+    {
+      "customerId": "cust_ramesh_auto",
+      "type": "CREDIT",
+      "amountPaise": 10000,
+      "balanceEffectPaise": 10000,
+      "description": "2 Idli + 1 Vada + Tea",
+      "effectiveAt": "2026-10-15T08:00:00Z"
+    },
+    {
+      "customerId": "cust_ramesh_auto",
+      "type": "PAYMENT",
+      "amountPaise": 10000,
+      "balanceEffectPaise": -10000,
+      "description": "Cash paid at counter",
+      "effectiveAt": "2026-10-18T10:30:00Z"
+    }
+  ]
+}
