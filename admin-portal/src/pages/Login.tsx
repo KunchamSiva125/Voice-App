@@ -9,8 +9,8 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('owner@tiffin.local');
-  const [password, setPassword] = useState('Password123!');
+  const [username, setUsername] = useState('Siva');
+  const [password, setPassword] = useState('Siva@1250');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,13 +20,20 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      const data = await api.login(username, password);
+      const data = await api.login(username.trim(), password);
+      
+      // Strict role enforcement: Only ADMIN can use the admin portal
+      if (data.user.role !== 'ADMIN') {
+        setError('Access Denied: Only Admin (Siva) can access the Admin Web Portal. Owners please log into the Mobile Application.');
+        return;
+      }
+
       localStorage.setItem('tiffin_token', data.accessToken);
       localStorage.setItem('tiffin_user', JSON.stringify(data.user));
       onLoginSuccess(data.user, data.accessToken);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please verify credentials.');
+      setError(err.response?.data?.message || err.message || 'Login failed. Please verify credentials.');
     } finally {
       setLoading(false);
     }
@@ -55,23 +62,37 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         overflow: 'hidden'
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-          padding: '32px 28px',
+          background: 'linear-gradient(135deg, #0f172a, #1e293b)',
+          padding: '34px 28px 28px',
           color: '#ffffff',
-          textAlign: 'center'
+          textAlign: 'center',
+          borderBottom: '3px solid #f59e0b'
         }}>
           <div style={{
-            display: 'inline-flex',
-            padding: '12px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '12px',
-            marginBottom: '12px'
+            display: 'inline-block',
+            marginBottom: '14px'
           }}>
-            <UtensilsCrossed size={32} />
+            <img
+              src="/logo.png"
+              alt="Mahima Tiffin Centre Logo"
+              style={{
+                width: '88px',
+                height: '88px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                boxShadow: '0 4px 18px rgba(245, 158, 11, 0.4)',
+                border: '3px solid #f59e0b'
+              }}
+            />
           </div>
-          <h2 style={{ fontSize: '22px', fontWeight: 700 }}>తెలుగు టిఫిన్ ఖాటా</h2>
-          <p style={{ fontSize: '13px', opacity: 0.9, marginTop: '4px' }}>
-            Tiffin Hotel Debt Management & Ledger
+          <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#fcd34d', letterSpacing: '0.2px', margin: 0 }}>
+            Mahima Tiffin Centre
+          </h2>
+          <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff', marginTop: '4px', marginBottom: 0 }}>
+            మహిమ టిఫిన్ సెంటర్
+          </p>
+          <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px', marginBottom: 0 }}>
+            Admin & Ledger Management Portal
           </p>
         </div>
 
@@ -137,34 +158,21 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             </button>
           </form>
 
-          {/* Quick Credential Helper for Demo */}
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textAlign: 'center' }}>
-              Quick Fill Demo Accounts:
+          {/* Quick Credential Helper for Admin */}
+          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px' }}>
+              Admin Portal Access:
             </p>
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => fillCredentials('owner@tiffin.local', 'Password123!')}
-              >
-                Owner
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => fillCredentials('admin@tiffin.local', 'Password123!')}
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => fillCredentials('kalyan@tiffin.local', 'Password123!')}
-              >
-                Family Member
-              </button>
-            </div>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => fillCredentials('Siva', 'Siva@1250')}
+            >
+              Fill Admin Credentials (Siva)
+            </button>
+            <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>
+              Hotel Owners (9014798120, 9949795364) access the hotel khata via Mobile App.
+            </p>
           </div>
         </div>
       </div>

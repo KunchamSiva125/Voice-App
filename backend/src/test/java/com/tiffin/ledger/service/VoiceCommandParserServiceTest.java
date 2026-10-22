@@ -104,12 +104,22 @@ class VoiceCommandParserServiceTest {
     }
 
     @Test
-    @DisplayName("Ambiguity: 'cut 100' triggers clarification between payment and discount")
-    void testAmbiguousCommandTriggersClarification() {
-        VoiceParseRequest request = new VoiceParseRequest("Ramesh khata lo 100 cut cheyyi");
-        VoiceParseResponse response = parserService.parseCommand(request);
+    @DisplayName("Voice Grammar: Telugu script numbers 'వంద', 'రెండు వందలు', 'యాభై' and English number words 'hundred'")
+    void testTeluguScriptAndEnglishNumberWords() {
+        Customer cust = new Customer("కొంచెం లక్ష్మణరావు", "9848011111", null, "owner");
+        cust.setId("cust_klr");
+        when(customerService.matchCustomersForVoice(anyString())).thenReturn(List.of(new CustomerDto(cust, 0L)));
 
-        assertTrue(response.isRequiresConfirmation());
-        assertTrue(response.getClarificationQuestion().contains("చెల్లింపుగా (Payment) రికార్డ్ చేయాలా లేక డిస్కౌంట్ ఇవ్వాలా"));
+        // 1. Spoken with Telugu script 'వంద' (100)
+        VoiceParseRequest req1 = new VoiceParseRequest("కొంచెం లక్ష్మణరావుకి వంద రూపాయలు అప్పు రాయి");
+        VoiceParseResponse resp1 = parserService.parseCommand(req1);
+        assertEquals("ADD_CREDIT", resp1.getIntent());
+        assertEquals("కొంచెం లక్ష్మణరావు", resp1.getCustomerName());
+        assertEquals(10000L, resp1.getAmountPaise(), "వంద must equal 10000 paise (₹100)");
+
+        // 2. Spoken with English word 'hundred'
+        VoiceParseRequest req2 = new VoiceParseRequest("కొంచెం లక్ష్మణరావుకి hundred rupees appu raayi");
+        VoiceParseResponse resp2 = parserService.parseCommand(req2);
+        assertEquals(10000L, resp2.getAmountPaise(), "'hundred' must equal 10000 paise (₹100)");
     }
 }

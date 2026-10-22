@@ -31,4 +31,41 @@ class CustomerProvider extends ChangeNotifier {
   Future<void> refresh() async {
     await searchCustomers(_searchQuery);
   }
+
+  Future<CustomerModel> createCustomer({
+    required String name,
+    List<String>? aliases,
+    String? phoneNumber,
+    String? notes,
+    int? initialDebtPaise,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final customer = await _apiService.createCustomer(
+        name: name,
+        aliases: aliases,
+        phoneNumber: phoneNumber,
+        notes: notes,
+        initialDebtPaise: initialDebtPaise,
+      );
+      await searchCustomers(_searchQuery);
+      return customer;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteCustomer(String customerId) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _apiService.deleteCustomer(customerId);
+      await searchCustomers(_searchQuery);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

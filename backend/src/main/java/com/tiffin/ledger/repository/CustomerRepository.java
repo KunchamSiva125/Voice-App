@@ -21,7 +21,7 @@ public interface CustomerRepository extends MongoRepository<Customer, String> {
     @Query("{ 'status': ?0, '$or': [ " +
            "{ 'normalizedName': { '$regex': ?1, '$options': 'i' } }, " +
            "{ 'name': { '$regex': ?1, '$options': 'i' } }, " +
-           "{ 'aliases': { '$elemMatch': { '$regex': ?1, '$options': 'i' } } }, " +
+           "{ 'aliases': { '$regex': ?1, '$options': 'i' } }, " +
            "{ 'phoneNumber': { '$regex': ?1, '$options': 'i' } } " +
            "] }")
     Page<Customer> searchCustomers(CustomerStatus status, String searchTerm, Pageable pageable);

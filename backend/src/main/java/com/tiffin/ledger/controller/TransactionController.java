@@ -55,8 +55,8 @@ public class TransactionController {
     }
 
     @PostMapping("/opening-balance")
-    @PreAuthorize("hasRole('OWNER')")
-    @Operation(summary = "Import opening debt migrated from physical notebook (OWNER only)")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    @Operation(summary = "Import opening debt migrated from physical notebook (OWNER/ADMIN)")
     public ResponseEntity<TransactionResponse> importOpeningBalance(
             @Valid @RequestBody ImportOpeningBalanceRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,

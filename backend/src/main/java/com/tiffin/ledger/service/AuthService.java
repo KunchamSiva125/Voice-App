@@ -55,20 +55,32 @@ public class AuthService {
     }
 
     @PostConstruct
-    public void initBootstrapOwner() {
-        if (userRepository.count() == 0) {
-            log.info("No users found in database. Initializing bootstrap OWNER account: {}", bootstrapOwnerUsername);
-            User owner = new User();
-            owner.setName(bootstrapOwnerName);
-            owner.setUsername(bootstrapOwnerUsername.trim().toLowerCase());
-            owner.setPasswordHash(passwordEncoder.encode(bootstrapOwnerPassword));
-            owner.setRole(Role.OWNER);
-            owner.setActive(true);
-            owner.setCreatedAt(Instant.now());
-            owner.setUpdatedAt(Instant.now());
-            userRepository.save(owner);
-            log.info("Bootstrap OWNER account initialized successfully.");
+    public void initBootstrapUsers() {
+        // Ensure ONLY the approved 3 system accounts exist
+        ensureUser("Owner 1", "9014798120", "9014798120", Role.OWNER);
+        ensureUser("Owner 2", "9949795364", "9949795364", Role.OWNER);
+        ensureUser("Siva (Admin)", "siva", "Siva@1250", Role.ADMIN);
+
+        // Remove outdated bootstrap/placeholder accounts if present
+        userRepository.findByUsername("owner@tiffin.local").ifPresent(userRepository::delete);
+        userRepository.findByUsername("admin@tiffin.local").ifPresent(userRepository::delete);
+        userRepository.findByUsername("kalyan@tiffin.local").ifPresent(userRepository::delete);
+    }
+
+    private void ensureUser(String name, String username, String rawPassword, Role role) {
+        String cleanUser = username.trim().toLowerCase();
+        User user = userRepository.findByUsername(cleanUser).orElseGet(User::new);
+        user.setName(name);
+        user.setUsername(cleanUser);
+        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        user.setRole(role);
+        user.setActive(true);
+        if (user.getCreatedAt() == null) {
+            user.setCreatedAt(Instant.now());
         }
+        user.setUpdatedAt(Instant.now());
+        userRepository.save(user);
+        log.info("Synchronized user account: {} [{}]", cleanUser, role);
     }
 
     public AuthResponse login(AuthRequest request, String clientIp) {

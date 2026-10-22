@@ -18,8 +18,8 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
         return new OpenAPI()
                 .info(new Info()
-                        .title("Telugu Voice-Based Tiffin Hotel Debt Management API")
-                        .description("Production REST API supporting Telugu voice commands, double-entry ledger tracking, customer management, and family-accessible audit logs.")
+                        .title("Mahima Tiffin Centre - Voice-Based Debt Management API")
+                        .description("Production REST API for Mahima Tiffin Centre supporting Telugu voice commands, double-entry ledger tracking, customer management, and audit logs.")
                         .version("1.0.0")
                         .contact(new Contact().name("Tiffin Ledger Support").email("support@tiffin.local"))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))

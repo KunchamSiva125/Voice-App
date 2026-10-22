@@ -22,8 +22,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('OWNER')")
-@Tag(name = "Administration", description = "User roles, access management, and system audit trail (OWNER only)")
+@PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+@Tag(name = "Administration", description = "User roles, access management, and system audit trail (OWNER/ADMIN)")
 public class AdminUserController {
 
     private final UserService userService;

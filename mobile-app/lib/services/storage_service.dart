@@ -8,11 +8,25 @@ class StorageService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   Future<void> saveAuthToken(String token) async {
-    await _secureStorage.write(key: ApiConfig.tokenKey, value: token);
+    try {
+      await _secureStorage.write(key: ApiConfig.tokenKey, value: token);
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(ApiConfig.tokenKey, token);
+    } catch (_) {}
   }
 
   Future<String?> getAuthToken() async {
-    return await _secureStorage.read(key: ApiConfig.tokenKey);
+    try {
+      final token = await _secureStorage.read(key: ApiConfig.tokenKey);
+      if (token != null && token.isNotEmpty) return token;
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(ApiConfig.tokenKey);
+    } catch (_) {}
+    return null;
   }
 
   Future<void> saveUserProfile(UserModel user) async {
@@ -34,8 +48,11 @@ class StorageService {
   }
 
   Future<void> clearAll() async {
-    await _secureStorage.delete(key: ApiConfig.tokenKey);
+    try {
+      await _secureStorage.delete(key: ApiConfig.tokenKey);
+    } catch (_) {}
     final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(ApiConfig.tokenKey);
     await prefs.remove(ApiConfig.userKey);
   }
 }

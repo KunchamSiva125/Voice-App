@@ -191,6 +191,10 @@ export const api = {
     const res = await apiClient.post(`/customers/${id}/archive`);
     return res.data;
   },
+  deleteCustomer: async (id: string) => {
+    const res = await apiClient.delete(`/customers/${id}`);
+    return res.data;
+  },
   mergeCustomers: async (sourceCustomerId: string, targetCustomerId: string, reason: string) => {
     const res = await apiClient.post('/customers/merge', { sourceCustomerId, targetCustomerId, reason });
     return res.data;
@@ -215,8 +219,8 @@ export const api = {
     });
     return res.data;
   },
-  importOpeningBalance: async (customerId: string, amountPaise: number, notebookPageNumber?: string, notes?: string) => {
-    const res = await apiClient.post('/transactions/opening-balance', { customerId, amountPaise, notebookPageNumber, notes }, {
+  importOpeningBalance: async (customerId: string, amountPaise: number, notebookPageNumber?: string, notes?: string, openingDate?: string) => {
+    const res = await apiClient.post('/transactions/opening-balance', { customerId, amountPaise, notebookPageNumber, notes, openingDate }, {
       headers: { 'Idempotency-Key': generateUUID() }
     });
     return res.data;

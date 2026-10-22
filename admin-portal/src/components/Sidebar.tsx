@@ -26,13 +26,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="hotel-icon-badge">
-          <UtensilsCrossed size={22} />
-        </div>
+      <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 14px' }}>
+        <img
+          src="/logo.png"
+          alt="Mahima Tiffin Centre Logo"
+          style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            objectFit: 'cover',
+            boxShadow: '0 2px 10px rgba(245, 158, 11, 0.45)',
+            border: '2px solid #f59e0b',
+            flexShrink: 0
+          }}
+        />
         <div className="sidebar-brand">
-          <h1>తెలుగు టిఫిన్ ఖాటా</h1>
-          <p>Tiffin Debt Management</p>
+          <h1 style={{ fontSize: '15px', fontWeight: 800, color: '#f8fafc', margin: 0, lineHeight: 1.2 }}>Mahima Tiffin Centre</h1>
+          <p style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 600, margin: '2px 0 0 0' }}>మహిమ టిఫిన్ సెంటర్</p>
         </div>
       </div>
 
@@ -59,10 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
           </NavLink>
         )}
 
-        {isOwner && (
+        {isAdmin && (
           <NavLink to="/migration" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <BookOpen size={18} />
-            <span>Notebook Migration / పుస్తకం</span>
+            <span>Notebook Migration / పుస్తకం బాకీలు</span>
           </NavLink>
         )}
 
@@ -73,21 +83,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
           </NavLink>
         )}
 
-        {isOwner && (
+        {isAdmin && (
           <NavLink to="/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <UserCheck size={18} />
             <span>Family & Users / సభ్యులు</span>
           </NavLink>
         )}
 
-        {isOwner && (
+        {isAdmin && (
           <NavLink to="/audit" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <ShieldAlert size={18} />
             <span>Audit Trail / ఆడిట్ లాగ్</span>
           </NavLink>
         )}
 
-        {isOwner && (
+        {isAdmin && (
           <NavLink to="/exports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <Download size={18} />
             <span>CSV Exports / బ్యాకప్</span>

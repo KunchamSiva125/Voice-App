@@ -66,4 +66,4 @@ adb install -r build/app/outputs/flutter-apk/app-release.apk
 1. Send `app-release.apk` to your phone via Google Drive, WhatsApp, or USB cable.
 2. Open the file on the Android device.
 3. If prompted, allow "Install from Unknown Sources".
-4. Open **తెలుగు టిఫిన్ ఖాటా** and grant the **Microphone** permission when prompted.
+4. Open **Mahima Tiffin Centre (మహిమ టిఫిన్ సెంటర్)** and grant the **Microphone** permission when prompted.

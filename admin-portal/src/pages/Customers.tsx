@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, Customer } from '../api/client';
-import { Search, UserPlus, Phone, IndianRupee, Eye, Archive } from 'lucide-react';
+import { Search, UserPlus, Phone, IndianRupee, Eye, Archive, BookOpen } from 'lucide-react';
 
 export const Customers: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -73,13 +73,19 @@ export const Customers: React.FC = () => {
           <p>Search, manage customer debt profiles, and add new customers</p>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="btn btn-primary"
-        >
-          <UserPlus size={18} />
-          <span>New Customer / కొత్త కస్టమర్</span>
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Link to="/migration" className="btn btn-secondary">
+            <BookOpen size={18} />
+            <span>పుస్తకం పాత బాకీల నమోదు (Notebook Debts)</span>
+          </Link>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn btn-primary"
+          >
+            <UserPlus size={18} />
+            <span>New Customer / కొత్త కస్టమర్</span>
+          </button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -146,10 +152,21 @@ export const Customers: React.FC = () => {
                     <span className="badge badge-active">{c.status}</span>
                   </td>
                   <td>
-                    <Link to={`/customers/${c.id}`} className="btn btn-secondary btn-sm">
-                      <Eye size={14} />
-                      <span>Details</span>
-                    </Link>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <Link to={`/customers/${c.id}`} className="btn btn-secondary btn-sm" title="View customer profile">
+                        <Eye size={14} />
+                        <span>Details</span>
+                      </Link>
+                      <Link
+                        to={`/migration?customerId=${c.id}`}
+                        className="btn btn-secondary btn-sm"
+                        title="Add previous debt written in physical notebook"
+                        style={{ borderColor: '#d97706', color: '#b45309', background: '#fffbeb' }}
+                      >
+                        <BookOpen size={14} />
+                        <span>+ Book Debt</span>
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))

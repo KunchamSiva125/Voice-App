@@ -23,10 +23,12 @@ class AndroidNativeSpeechProvider implements ISpeechRecognitionProvider {
 
   @override
   Future<bool> initialize() async {
-    final status = await Permission.microphone.request();
-    if (status != PermissionStatus.granted) {
-      debugPrint('Microphone permission denied');
-      return false;
+    if (!kIsWeb) {
+      final status = await Permission.microphone.request();
+      if (status != PermissionStatus.granted) {
+        debugPrint('Microphone permission denied');
+        return false;
+      }
     }
 
     try {

@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api, Customer } from '../api/client';
-import { BookOpen, CheckCircle, AlertCircle } from 'lucide-react';
+import { BookOpen, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
 
 export const OpeningBalanceMigration: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [amountRupees, setAmountRupees] = useState('');
+  const [debtDate, setDebtDate] = useState('');
   const [notebookPage, setNotebookPage] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +17,11 @@ export const OpeningBalanceMigration: React.FC = () => {
 
   useEffect(() => {
     loadCustomers();
-  }, []);
+    const customerIdFromQuery = searchParams.get('customerId');
+    if (customerIdFromQuery) {
+      setSelectedCustomerId(customerIdFromQuery);
+    }
+  }, [searchParams]);
 
   const loadCustomers = async () => {
     try {
@@ -43,17 +50,20 @@ export const OpeningBalanceMigration: React.FC = () => {
 
     setLoading(true);
     try {
+      const openingDateIso = debtDate ? new Date(debtDate).toISOString() : undefined;
       const res = await api.importOpeningBalance(
         selectedCustomerId,
         amountPaise,
         notebookPage.trim() || undefined,
-        notes.trim() || undefined
+        notes.trim() || undefined,
+        openingDateIso
       );
 
       setSuccessMsg(res.teluguSpeechMessage || 'Opening balance imported successfully.');
       setAmountRupees('');
       setNotebookPage('');
       setNotes('');
+      setDebtDate('');
     } catch (err: any) {
       setErrorMsg(err.response?.data?.message || 'Failed to import opening balance');
     } finally {
@@ -114,6 +124,19 @@ export const OpeningBalanceMigration: React.FC = () => {
               onChange={(e) => setAmountRupees(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Date Written in Notebook / పుస్తకంలో రాసిన అసలు తేదీ (Optional)</label>
+            <input
+              type="date"
+              className="form-control"
+              value={debtDate}
+              onChange={(e) => setDebtDate(e.target.value)}
+            />
+            <small style={{ color: '#64748b', fontSize: '11px', marginTop: '4px', display: 'block' }}>
+              Select the historical date from the notebook for audit proof. Defaults to today if left empty.
+            </small>
           </div>
 
           <div className="form-group">

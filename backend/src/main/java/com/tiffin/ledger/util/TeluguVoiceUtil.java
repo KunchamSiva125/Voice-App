@@ -14,17 +14,17 @@ public final class TeluguVoiceUtil {
         String amtStr = CurrencyUtil.toTeluguRupeesString(amountPaise);
         String balStr = CurrencyUtil.toTeluguRupeesString(newBalancePaise);
         if (newBalancePaise <= 0) {
-            return customerName + " గారి నుండి " + amtStr + " చెల్లింపు అందింది. బాకీ పూర్తిగా చెల్లించబడింది.";
+            return customerName + " గారి ఖాతా నుండి " + amtStr + " చెల్లింపు జమ చేయబడింది. బాకీ పూర్తిగా క్లియర్ అయ్యింది.";
         }
-        return customerName + " గారి నుండి " + amtStr + " చెల్లింపు అందింది. ప్రస్తుత మిగిలిన బాకీ " + balStr + ".";
+        return customerName + " గారి ఖాతా నుండి " + amtStr + " తీసివేయబడ్డాయి. ప్రస్తుత మిగిలిన బాకీ " + balStr + ".";
     }
 
     public static String buildBalanceQueryResponse(String customerName, long balancePaise) {
         if (balancePaise <= 0) {
-            return customerName + " గారికి ఎటువంటి బాకీ లేదు. ఖాతా క్లియర్ గా ఉంది.";
+            return customerName + " గారి ఖాతా ఉంది. ఎటువంటి బాకీ లేదు, ఖాతా క్లియర్ గా ఉంది.";
         }
         String balStr = CurrencyUtil.toTeluguRupeesString(balancePaise);
-        return customerName + " గారికి మొత్తం " + balStr + " బాకీ ఉంది.";
+        return customerName + " గారి ఖాతా ఉంది. వారి ప్రస్తుత మొత్తం బాకీ " + balStr + ".";
     }
 
     public static String buildDiscountResponse(String customerName, long amountPaise, long newBalancePaise) {

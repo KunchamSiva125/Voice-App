@@ -56,7 +56,8 @@ public class SecurityConfig {
                 })
             )
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
+                // Public endpoints & Preflight CORS
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/health",
@@ -65,10 +66,10 @@ public class SecurityConfig {
                     "/swagger-ui.html"
                 ).permitAll()
 
-                // Admin only endpoints
-                .requestMatchers("/api/admin/users/**").hasRole("OWNER")
-                .requestMatchers("/api/admin/exports/**").hasRole("OWNER")
-                .requestMatchers("/api/transactions/opening-balance").hasRole("OWNER")
+                // Administrative endpoints (Admin portal)
+                .requestMatchers("/api/admin/users/**").hasAnyRole("OWNER", "ADMIN")
+                .requestMatchers("/api/admin/exports/**").hasAnyRole("OWNER", "ADMIN")
+                .requestMatchers("/api/transactions/opening-balance").hasAnyRole("OWNER", "ADMIN")
 
                 // Discounts and reversals require OWNER or ADMIN
                 .requestMatchers("/api/transactions/discount").hasAnyRole("OWNER", "ADMIN")
@@ -81,7 +82,8 @@ public class SecurityConfig {
                 // Customer mutations require OWNER or ADMIN
                 .requestMatchers(HttpMethod.POST, "/api/customers").hasAnyRole("OWNER", "ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/customers/**").hasAnyRole("OWNER", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/customers/*/archive").hasRole("OWNER")
+                .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasAnyRole("OWNER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/customers/*/archive").hasAnyRole("OWNER", "ADMIN")
 
                 // Operational endpoints accessible to FAMILY_MEMBER, ADMIN, OWNER
                 .requestMatchers(
@@ -112,11 +114,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
+        // Allow all local development origins (Flutter Web on random ports, React Admin portal, etc.)
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://localhost:*",
+            "https://127.0.0.1:*",
+            "*"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Idempotency-Key", "X-Requested-With"));
-        configuration.setExposedHeaders(Arrays.asList("Content-Disposition", "Idempotency-Key"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Content-Disposition", "Idempotency-Key", "Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

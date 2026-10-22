@@ -17,8 +17,8 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/admin/exports")
-@PreAuthorize("hasRole('OWNER')")
-@Tag(name = "Data Exports", description = "CSV exports and backup generation (OWNER only)")
+@PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+@Tag(name = "Data Exports", description = "CSV exports and backup generation (OWNER/ADMIN)")
 public class AdminExportController {
 
     private final ExportService exportService;

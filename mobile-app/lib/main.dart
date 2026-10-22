@@ -4,11 +4,14 @@ import 'providers/auth_provider.dart';
 import 'providers/customer_provider.dart';
 import 'providers/ledger_provider.dart';
 import 'providers/voice_command_provider.dart';
+import 'config/api_config.dart';
 import 'screens/home_voice_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ApiConfig.loadCustomBaseUrl();
   runApp(const TiffinKhataApp());
 }
 
@@ -25,7 +28,7 @@ class TiffinKhataApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => VoiceCommandProvider()),
       ],
       child: MaterialApp(
-        title: 'తెలుగు టిఫిన్ ఖాటా',
+        title: 'Mahima Tiffin Centre',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
@@ -51,6 +54,10 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     if (auth.isAuthenticated) {
+      final role = auth.currentUser?.role ?? 'FAMILY_MEMBER';
+      if (role == 'OWNER' || role == 'ADMIN') {
+        return const AdminDashboardScreen();
+      }
       return const HomeVoiceScreen();
     } else {
       return const LoginScreen();

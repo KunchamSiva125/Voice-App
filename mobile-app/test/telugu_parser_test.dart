@@ -41,5 +41,18 @@ void main() {
       expect(res.intent, 'ADD_CREDIT');
       expect(res.amountPaise, 10000);
     });
+
+    test('Parses Telugu script number words: "కొంచెం లక్ష్మణరావుకి వంద రూపాయలు అప్పు రాయి"', () {
+      final res = TeluguVoiceParser.parse("కొంచెం లక్ష్మణరావుకి వంద రూపాయలు అప్పు రాయి");
+      expect(res.intent, 'ADD_CREDIT');
+      expect(res.customerName, 'కొంచెం లక్ష్మణరావు');
+      expect(res.amountPaise, 10000);
+    });
+
+    test('Parses English number word: "Siva ki hundred rupees credit raayi"', () {
+      final res = TeluguVoiceParser.parse("Siva ki hundred rupees credit raayi");
+      expect(res.amountPaise, 10000);
+      expect(res.customerName, 'Siva');
+    });
   });
 }

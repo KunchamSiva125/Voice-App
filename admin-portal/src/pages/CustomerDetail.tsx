@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api, Customer, CustomerBalance, LedgerTransaction } from '../api/client';
 import {
   ArrowLeft,
@@ -11,11 +11,13 @@ import {
   Clock,
   UserCheck,
   AlertTriangle,
-  Receipt
+  Receipt,
+  Trash2
 } from 'lucide-react';
 
 export const CustomerDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [balance, setBalance] = useState<CustomerBalance | null>(null);
   const [transactions, setTransactions] = useState<LedgerTransaction[]>([]);
@@ -24,6 +26,8 @@ export const CustomerDetail: React.FC = () => {
   // Modals
   const [actionType, setActionType] = useState<'CREDIT' | 'PAYMENT' | 'DISCOUNT' | null>(null);
   const [reversalTx, setReversalTx] = useState<LedgerTransaction | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form State
   const [amountRupees, setAmountRupees] = useState('');
@@ -118,6 +122,20 @@ export const CustomerDetail: React.FC = () => {
       loadData(customer.id);
     } catch (err: any) {
       setErrorMsg(err.response?.data?.message || 'Failed to reverse transaction');
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!customer) return;
+    setIsDeleting(true);
+    setErrorMsg(null);
+    try {
+      await api.deleteCustomer(customer.id);
+      setShowDeleteModal(false);
+      navigate('/customers');
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || 'Failed to remove customer');
+      setIsDeleting(false);
     }
   };
 
@@ -272,6 +290,18 @@ export const CustomerDetail: React.FC = () => {
         >
           <Tag size={18} />
           <span>Give Discount / రాయితీ ఇవ్వు</span>
+        </button>
+
+        <button
+          className="btn btn-danger"
+          style={{ background: '#fff1f2', color: '#e11d48', border: '1px solid #fecdd3', marginLeft: 'auto' }}
+          onClick={() => {
+            setErrorMsg(null);
+            setShowDeleteModal(true);
+          }}
+        >
+          <Trash2 size={18} />
+          <span>Remove Customer / ఖాతాను తొలగించండి</span>
         </button>
       </div>
 
@@ -496,6 +526,98 @@ export const CustomerDetail: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Customer Confirmation Modal */}
+      {showDeleteModal && customer && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '490px' }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: '#ffe4e6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#e11d48'
+                }}>
+                  <Trash2 size={20} />
+                </div>
+                <div>
+                  <h4 style={{ color: '#e11d48', margin: 0, fontSize: '16px' }}>Remove Customer Profile</h4>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>కస్టమర్ ఖాతాను శాశ్వతంగా తొలగించండి</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                style={{ color: '#94a3b8', fontSize: '18px', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p style={{ fontSize: '14px', color: '#1e293b', marginBottom: '14px', lineHeight: 1.5 }}>
+                Are you sure you want to permanently remove customer <strong>"{customer.name}"</strong>?
+              </p>
+
+              {balance && balance.outstandingBalancePaise > 0 && (
+                <div style={{
+                  padding: '14px',
+                  background: '#fff1f2',
+                  border: '1px solid #fecdd3',
+                  borderRadius: '10px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'flex-start'
+                }}>
+                  <AlertTriangle size={20} color="#e11d48" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div style={{ fontSize: '12.5px', color: '#9f1239', lineHeight: 1.45 }}>
+                    <strong>బాకీ హెచ్చరిక (Outstanding Debt Warning):</strong>
+                    <div style={{ marginTop: '4px' }}>
+                      This customer currently has an unpaid balance of <strong style={{ fontSize: '14px' }}>₹{balance.balanceInRupees.toFixed(2)}</strong>.
+                      Deleting this customer will permanently delete this balance and ledger history without a settlement payment.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {errorMsg && (
+                <div style={{ padding: '10px 14px', background: '#fff1f2', color: '#e11d48', borderRadius: '8px', marginBottom: '14px', fontSize: '13px' }}>
+                  {errorMsg}
+                </div>
+              )}
+
+              <p style={{ fontSize: '12px', color: '#64748b', background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', margin: 0 }}>
+                ℹ️ All {transactions.length} transaction records linked to this customer will be removed. This action is irreversible and recorded in the audit log.
+              </p>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={isDeleting}
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel / రద్దు
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={isDeleting}
+                onClick={handleDeleteCustomer}
+                style={{ background: '#e11d48', color: '#fff', border: 'none' }}
+              >
+                {isDeleting ? 'Removing...' : 'Permanently Delete / ఖాతాను తొలగించు'}
+              </button>
+            </div>
           </div>
         </div>
       )}

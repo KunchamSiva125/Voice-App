@@ -90,7 +90,7 @@ public class CustomerController {
     }
 
     @PostMapping("/{id}/archive")
-    @PreAuthorize("hasRole('OWNER')")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
     @Operation(summary = "Archive customer without destroying ledger history")
     public ResponseEntity<CustomerDto> archiveCustomer(
             @PathVariable String id,
@@ -99,8 +99,8 @@ public class CustomerController {
     }
 
     @PostMapping("/merge")
-    @PreAuthorize("hasRole('OWNER')")
-    @Operation(summary = "Carefully merge duplicate customer profiles (OWNER only)")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    @Operation(summary = "Carefully merge duplicate customer profiles (OWNER/ADMIN)")
     public ResponseEntity<CustomerDto> mergeCustomers(
             @RequestBody Map<String, String> body,
             @AuthenticationPrincipal UserPrincipal principal) {
@@ -108,5 +108,24 @@ public class CustomerController {
         String targetId = body.get("targetCustomerId");
         String reason = body.getOrDefault("reason", "Duplicate customer profile merged");
         return ResponseEntity.ok(customerService.mergeCustomers(sourceId, targetId, reason, principal));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    @Operation(summary = "Permanently delete a customer profile and associated ledger entries")
+    public ResponseEntity<Void> deleteCustomer(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        customerService.deleteCustomer(id, principal);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/purge-all")
+    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
+    @Operation(summary = "Purge all static/existing customers and ledger entries for fresh production start")
+    public ResponseEntity<Void> purgeAllCustomers(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        customerService.purgeAllCustomers(principal);
+        return ResponseEntity.noContent().build();
     }
 }

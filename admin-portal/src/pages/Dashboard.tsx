@@ -54,10 +54,29 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">
-          <h2>హోటల్ లెక్కల వివరాలు (Dashboard)</h2>
-          <p>Real-time debt ledger & today's transactions in Asia/Kolkata context</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <img
+            src="/logo.png"
+            alt="Mahima Tiffin Centre Logo"
+            style={{
+              width: '50px',
+              height: '50px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '2px solid #f59e0b',
+              boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
+              flexShrink: 0
+            }}
+          />
+          <div>
+            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>
+              Mahima Tiffin Centre • మహిమ టిఫిన్ సెంటర్
+            </h2>
+            <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: '#64748b' }}>
+              హోటల్ లెక్కల వివరాలు (Real-time Debt Ledger & Daily Financials)
+            </p>
+          </div>
         </div>
 
         {daily?.teluguSummary && (

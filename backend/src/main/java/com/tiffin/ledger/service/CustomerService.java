@@ -10,6 +10,10 @@ import com.tiffin.ledger.dto.transaction.ImportOpeningBalanceRequest;
 import com.tiffin.ledger.repository.CustomerRepository;
 import com.tiffin.ledger.repository.LedgerTransactionRepository;
 import com.tiffin.ledger.security.UserPrincipal;
+import com.tiffin.ledger.util.TeluguPhoneticMatcher;
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,13 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
+
+    private static final Logger log = LoggerFactory.getLogger(CustomerService.class);
 
     private final CustomerRepository customerRepository;
     private final LedgerTransactionRepository transactionRepository;
@@ -38,6 +42,35 @@ public class CustomerService {
         this.transactionRepository = transactionRepository;
         this.ledgerService = ledgerService;
         this.auditService = auditService;
+    }
+
+    @PostConstruct
+    public void syncSmartAliases() {
+        try {
+            List<Customer> allCustomers = customerRepository.findAll();
+            int updatedCount = 0;
+            for (Customer c : allCustomers) {
+                List<String> current = c.getAliases() != null ? new ArrayList<>(c.getAliases()) : new ArrayList<>();
+                List<String> generated = TeluguPhoneticMatcher.generateSmartAliases(c.getName());
+                boolean changed = false;
+                for (String g : generated) {
+                    if (!current.contains(g)) {
+                        current.add(g);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    c.setAliases(current);
+                    customerRepository.save(c);
+                    updatedCount++;
+                }
+            }
+            if (updatedCount > 0) {
+                log.info("Synchronized smart bilingual aliases for {} customer(s)", updatedCount);
+            }
+        } catch (Exception e) {
+            log.warn("Could not synchronize customer smart aliases on startup: {}", e.getMessage());
+        }
     }
 
     public Page<CustomerDto> listCustomers(String search, CustomerStatus status, Pageable pageable) {
@@ -80,9 +113,14 @@ public class CustomerService {
                 request.getNotes() != null ? request.getNotes().trim() : null,
                 actor.getUsername());
 
-        if (request.getAliases() != null && !request.getAliases().isEmpty()) {
-            customer.setAliases(request.getAliases());
+        List<String> aliases = request.getAliases() != null ? new ArrayList<>(request.getAliases()) : new ArrayList<>();
+        List<String> smartAliases = TeluguPhoneticMatcher.generateSmartAliases(cleanName);
+        for (String sa : smartAliases) {
+            if (!aliases.contains(sa)) {
+                aliases.add(sa);
+            }
         }
+        customer.setAliases(aliases);
 
         Customer saved = customerRepository.save(customer);
 
@@ -161,21 +199,54 @@ public class CustomerService {
 
     /**
      * Resolves matching customers for voice input.
-     * Matches across name, aliases (Telugu and English), and phone.
+     * Matches across name, aliases (Telugu and English), phone, phonetic transliteration, and vowel stem variations.
      */
     public List<CustomerDto> matchCustomersForVoice(String spokenName) {
         if (spokenName == null || spokenName.trim().isEmpty()) {
             return List.of();
         }
         String clean = Customer.normalize(spokenName);
-        List<Customer> matches = customerRepository.matchByNameOrAlias(clean, clean);
 
-        return matches.stream()
-                .filter(c -> c.getStatus() == CustomerStatus.ACTIVE)
-                .map(c -> {
-                    long balance = ledgerService.calculateOutstandingBalancePaise(c.getId());
-                    return new CustomerDto(c, balance);
-                })
+        // 1. Check exact/regex DB match first
+        List<Customer> mongoMatches = customerRepository.matchByNameOrAlias(clean, clean);
+        if (!mongoMatches.isEmpty()) {
+            return mongoMatches.stream()
+                    .filter(c -> c.getStatus() == CustomerStatus.ACTIVE)
+                    .map(c -> new CustomerDto(c, ledgerService.calculateOutstandingBalancePaise(c.getId())))
+                    .collect(Collectors.toList());
+        }
+
+        // 2. Comprehensive phonetic, bilingual, stem, and fuzzy matching across active customers
+        List<Customer> activeCustomers = customerRepository.findByStatus(CustomerStatus.ACTIVE);
+
+        class ScoredCustomer {
+            final Customer customer;
+            final int score;
+            ScoredCustomer(Customer c, int s) { this.customer = c; this.score = s; }
+        }
+
+        List<ScoredCustomer> scored = new ArrayList<>();
+        int maxScore = 0;
+        for (Customer c : activeCustomers) {
+            int score = TeluguPhoneticMatcher.calculateMatchScore(spokenName, c);
+            if (score >= 80) {
+                scored.add(new ScoredCustomer(c, score));
+                if (score > maxScore) {
+                    maxScore = score;
+                }
+            }
+        }
+
+        if (scored.isEmpty()) {
+            return List.of();
+        }
+
+        // Keep top matches within 5 points of the top score
+        final int threshold = Math.max(80, maxScore - 5);
+        return scored.stream()
+                .filter(sc -> sc.score >= threshold)
+                .sorted((a, b) -> Integer.compare(b.score, a.score))
+                .map(sc -> new CustomerDto(sc.customer, ledgerService.calculateOutstandingBalancePaise(sc.customer.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -215,5 +286,28 @@ public class CustomerService {
                 Map.of("targetBalancePaise", updatedTargetBalance), null);
 
         return new CustomerDto(target, updatedTargetBalance);
+    }
+
+    @Transactional
+    public void deleteCustomer(String id, UserPrincipal actor) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + id));
+
+        List<LedgerTransaction> txs = transactionRepository.findByCustomerIdOrderByEffectiveAtAsc(id);
+        transactionRepository.deleteAll(txs);
+        customerRepository.delete(customer);
+
+        auditService.logEvent(actor.getId(), actor.getUsername(), "CUSTOMER_DELETED",
+                "CUSTOMER", id, "Permanently deleted customer: " + customer.getName(),
+                Map.of("deletedTxCount", txs.size()), null, null);
+    }
+
+    @Transactional
+    public void purgeAllCustomers(UserPrincipal actor) {
+        transactionRepository.deleteAll();
+        customerRepository.deleteAll();
+        auditService.logEvent(actor.getId(), actor.getUsername(), "ALL_CUSTOMERS_PURGED",
+                "SYSTEM", "GLOBAL", "Purged all customers and ledger data for fresh production setup",
+                null, null, null);
     }
 }

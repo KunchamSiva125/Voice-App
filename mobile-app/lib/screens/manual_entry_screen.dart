@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/customer_model.dart';
 import '../providers/customer_provider.dart';
 import '../providers/ledger_provider.dart';
 import '../services/api_service.dart';
 import '../services/text_to_speech_service.dart';
+import '../widgets/add_customer_dialog.dart';
 
 class ManualEntryScreen extends StatefulWidget {
   const ManualEntryScreen({Key? key}) : super(key: key);
@@ -133,10 +133,30 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 const SizedBox(height: 16),
               ],
 
-              // Customer Dropdown
-              const Text(
-                'కస్టమర్ (Customer) *',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF334155)),
+              // Customer Dropdown Header with Add New Customer Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'కస్టమర్ (Customer) *',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF334155)),
+                  ),
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      visualDensity: VisualDensity.compact,
+                      foregroundColor: const Color(0xFFD97706),
+                    ),
+                    icon: const Icon(Icons.person_add, size: 16),
+                    label: const Text('+ కొత్త కస్టమర్', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    onPressed: () async {
+                      final newCust = await AddCustomerDialog.show(context);
+                      if (newCust != null && mounted) {
+                        setState(() => _selectedCustomerId = newCust.id);
+                      }
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
