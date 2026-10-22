@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
@@ -16,26 +17,38 @@ class StorageService {
   }
 
   Future<void> saveUserProfile(UserModel user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(ApiConfig.userKey, jsonEncode(user.toJson()));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(ApiConfig.userKey, jsonEncode(user.toJson()));
+    } catch (e) {
+      debugPrint('Error saving user profile: $e');
+    }
   }
 
   Future<UserModel?> getUserProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonStr = prefs.getString(ApiConfig.userKey);
-    if (jsonStr != null) {
-      try {
-        return UserModel.fromJson(jsonDecode(jsonStr));
-      } catch (e) {
-        return null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(ApiConfig.userKey);
+      if (jsonStr != null) {
+        try {
+          return UserModel.fromJson(jsonDecode(jsonStr));
+        } catch (e) {
+          return null;
+        }
       }
+    } catch (e) {
+      debugPrint('Error getting user profile: $e');
     }
     return null;
   }
 
   Future<void> clearAll() async {
-    await _secureStorage.delete(key: ApiConfig.tokenKey);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(ApiConfig.userKey);
+    try {
+      await _secureStorage.delete(key: ApiConfig.tokenKey);
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(ApiConfig.userKey);
+    } catch (_) {}
   }
 }

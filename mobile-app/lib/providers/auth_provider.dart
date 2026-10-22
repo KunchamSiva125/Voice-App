@@ -17,7 +17,12 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   Future<void> checkAuthStatus() async {
-    _currentUser = await _storageService.getUserProfile();
+    try {
+      _currentUser = await _storageService.getUserProfile();
+    } catch (e) {
+      debugPrint('Auth check status error: $e');
+      _currentUser = null;
+    }
     notifyListeners();
   }
 

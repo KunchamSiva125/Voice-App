@@ -3,6 +3,8 @@
 Thumbs.db
 *.log
 .env
+tools/
+*.apk
 
 # Backend (Java / Maven)
 backend/target/
