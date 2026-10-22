@@ -7,7 +7,6 @@ import 'providers/voice_command_provider.dart';
 import 'config/api_config.dart';
 import 'screens/home_voice_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/admin_dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,10 +53,6 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     if (auth.isAuthenticated) {
-      final role = auth.currentUser?.role ?? 'FAMILY_MEMBER';
-      if (role == 'OWNER' || role == 'ADMIN') {
-        return const AdminDashboardScreen();
-      }
       return const HomeVoiceScreen();
     } else {
       return const LoginScreen();

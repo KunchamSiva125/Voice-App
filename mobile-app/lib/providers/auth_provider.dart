@@ -10,7 +10,6 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
-  bool _hasLoggedOut = false;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -18,41 +17,13 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   Future<void> checkAuthStatus() async {
-    _isLoading = true;
-    notifyListeners();
-
     _currentUser = await _storageService.getUserProfile();
-    final token = await _storageService.getAuthToken();
-
-    if ((_currentUser == null || token == null) && !_hasLoggedOut) {
-      // Auto-authenticate with default Owner account for seamless Admin Portal access
-      try {
-        final res = await _apiService.login('9014798120', '9014798120');
-        final t = res['accessToken'];
-        final u = UserModel.fromJson(res['user']);
-        await _storageService.saveAuthToken(t);
-        await _storageService.saveUserProfile(u);
-        _currentUser = u;
-      } catch (_) {
-        // Fallback default Owner session so admin portal never kicks to login page
-        _currentUser = UserModel(
-          id: 'owner_default',
-          name: 'Owner 1',
-          username: '9014798120',
-          role: 'OWNER',
-          active: true,
-        );
-      }
-    }
-
-    _isLoading = false;
     notifyListeners();
   }
 
   Future<bool> login(String username, String password) async {
     _isLoading = true;
     _errorMessage = null;
-    _hasLoggedOut = false;
     notifyListeners();
 
     try {
@@ -76,7 +47,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    _hasLoggedOut = true;
     await _storageService.clearAll();
     _currentUser = null;
     notifyListeners();

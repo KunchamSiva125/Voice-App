@@ -5,7 +5,6 @@ import '../services/text_to_speech_service.dart';
 import '../widgets/voice_add_customer_sheet.dart';
 import '../widgets/voice_remove_customer_sheet.dart';
 import '../widgets/tiffin_logo.dart';
-import '../widgets/app_drawer.dart';
 import 'customer_detail_screen.dart';
 
 class CustomerListScreen extends StatefulWidget {
@@ -48,7 +47,6 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      drawer: const AppDrawer(currentItem: AppDrawerItem.customers),
       appBar: AppBar(
         title: const Row(
           children: [

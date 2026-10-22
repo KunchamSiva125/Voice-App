@@ -7,7 +7,6 @@ import '../providers/ledger_provider.dart';
 import '../services/api_service.dart';
 import '../services/text_to_speech_service.dart';
 import '../widgets/tiffin_logo.dart';
-import 'notebook_migration_screen.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
   final CustomerModel customer;
@@ -386,18 +385,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF2563EB)),
             tooltip: 'సవరించండి (Edit Details)',
             onPressed: _showEditCustomerDialog,
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu_book_rounded, color: Color(0xFFD97706)),
-            tooltip: 'పుస్తకం బాకీ నమోదు (Notebook Balance)',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => NotebookMigrationScreen(initialCustomerId: widget.customer.id),
-                ),
-              ).then((_) => _loadData());
-            },
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Color(0xFFE11D48)),

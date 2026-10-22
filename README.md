@@ -1,7 +1,7 @@
-# Mahima Tiffin Centre (మహిమ టిఫిన్ సెంటర్)
-**(Voice-Based Tiffin Hotel Debt Management & Ledger System)**
+# Telugu Voice-Based Tiffin Hotel Debt Management System
+**(తెలుగు టిఫిన్ హోటల్ బాకీల నిర్వహణ వ్యవస్థ - Telugu Tiffin Khata)**
 
-Production-grade debt management application designed for Mahima Tiffin Centre, replacing the traditional physical notebook (బాకీల చిట్టా) with a simple voice application in Telugu and a modern web admin portal.
+Production-grade debt management application designed for Indian tiffin hotels, replacing the traditional physical notebook (బాకీల చిట్టా) with a simple Android voice application in Telugu and a family-accessible web admin portal.
 
 ---
 
@@ -22,20 +22,14 @@ Production-grade debt management application designed for Mahima Tiffin Centre, 
   - `OWNER`: Master account, user management, notebook migration, audit trails, CSV exports.
   - `ADMIN`: Customer details, authorized transaction corrections and discounts.
   - `FAMILY_MEMBER`: Quick counter operations, search, balance queries, credit entries, payments.
-- **📱 Complete Mobile Application (Flutter First)**:
-  - Flutter 3.x & Dart with Material 3 design, 100% mobile-friendly for all screens.
-  - Unified mobile experience containing both Voice & Quick Counter and full Admin capabilities:
-    - 🎙️ Telugu Speech Recognition & Speakback (`te_IN` TTS)
-    - 📊 Mobile Financial Dashboard with real-time KPI metrics & Top Debtors ranking
-    - 👥 Customer Directory with Search, Aliases, Profile Editing, and Account Archival
-    - 📖 General Ledger with custom date range and transaction type filtering
-    - 🔄 Strict Double-Entry Corrections & Reversals with mandatory audit justifications
-    - 📘 Physical Notebook Balance Migration Wizard ("పుస్తకం బాకీల నమోదు")
-    - 📈 Historical Business Reports with Date Picker & spoken audio summary
-    - 👤 User & Staff Management with Role-Based Access Control (`OWNER`, `ADMIN`, `FAMILY_MEMBER`)
-    - 🛡️ Immutable System Audit Trail viewer
-    - 💾 CSV Data Exports (Customers & Transactions) and Cloud Backup Utilities
-  - Responsive navigation drawer and bottom sheets designed specifically for touch devices and smartphones.
+- **🌐 Responsive Web Admin Portal**:
+  - React 18, TypeScript, Vite, responsive glassmorphism UI, real-time dashboard metrics.
+  - Notebook balance migration wizard with physical page number references.
+  - CSV exports for customer rosters and financial transaction ledgers.
+- **📱 Android First**:
+  - Flutter & Dart with Material 3 design.
+  - Provider-independent speech-to-text architecture with Telugu audio response speakback (TTS).
+  - Manual entry fallback for noisy hotel environments.
 
 ---
 
@@ -43,7 +37,8 @@ Production-grade debt management application designed for Mahima Tiffin Centre, 
 
 | Layer | Technologies |
 |---|---|
-| **Mobile & Admin App** | Flutter 3.x, Dart, Material 3, Android SpeechRecognizer (`te_IN`), Android TTS, Provider, Responsive Web/Mobile |
+| **Mobile App** | Flutter 3.x, Dart, Material 3, Android SpeechRecognizer (`te_IN`), Android TTS, Provider |
+| **Admin Portal** | React 18, TypeScript, Vite, React Router 6, Lucide Icons, Glassmorphic CSS |
 | **Backend API** | Java 21, Spring Boot 3.3.x, Spring Security (Stateless JWT), Spring Data MongoDB, OpenAPI 3 / Swagger |
 | **Database** | MongoDB Atlas (Cloud) / Local MongoDB, Integer Paise Invariants, Asia/Kolkata Time Zone |
 
@@ -60,14 +55,20 @@ mvn spring-boot:run        # Starts API on http://localhost:8080
 - **Swagger Documentation**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - **Bootstrap Owner Login**: `owner@tiffin.local` / `Password123!`
 
-### 2. Complete Flutter Mobile & Admin Application
+### 2. React Admin Portal
+```bash
+cd admin-portal
+npm install
+npm run dev                # Starts web portal on http://localhost:5173
+```
+- Production build: `npm run build`
+
+### 3. Android Mobile Application
 ```bash
 cd mobile-app
 flutter pub get
 flutter run                # Runs on connected Android device or emulator
-flutter run -d chrome      # Runs on browser with mobile-responsive view
 ```
-- Or simply run [run-mobile.bat](file:///d:/Voice%20App/run-mobile.bat) / [run-portal.bat](file:///d:/Voice%20App/run-portal.bat)
 - Build APK: `flutter build apk --release`
 
 ---

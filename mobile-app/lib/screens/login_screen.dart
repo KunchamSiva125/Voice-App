@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/tiffin_logo.dart';
 import '../config/api_config.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'home_voice_screen.dart';
-import 'admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -98,27 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _openAdminPortal() async {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-
-    // If user has credentials typed in, use them; otherwise auto-use Owner 1 credentials
-    String user = _usernameController.text.trim();
-    String pass = _passwordController.text;
-    if (user.isEmpty || pass.isEmpty) {
-      user = '9014798120';
-      pass = '9014798120';
-      _fillAccount(user, pass);
-    }
-
-    await auth.login(user, pass);
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-      );
-    }
-  }
-
   void _handleLogin() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final success = await auth.login(
@@ -127,18 +104,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (success && mounted) {
-      final role = auth.currentUser?.role ?? 'FAMILY_MEMBER';
-      if (role == 'OWNER' || role == 'ADMIN') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeVoiceScreen()),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeVoiceScreen()),
+      );
     }
   }
 
@@ -148,35 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 14, top: 4),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.admin_panel_settings, size: 18, color: Color(0xFFF59E0B)),
-              label: const Text(
-                'Admin Portal / అడ్మిన్',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFFCD34D),
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E293B),
-                foregroundColor: const Color(0xFFFCD34D),
-                side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                elevation: 3,
-              ),
-              onPressed: _openAdminPortal,
-            ),
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -290,23 +230,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'ప్రవేశించండి (Log In)',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                               ),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.admin_panel_settings_rounded, size: 20),
-                        label: const Text(
-                          'అడ్మిన్ పోర్టల్ తెరవండి (Open Admin Portal)',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F172A),
-                          foregroundColor: const Color(0xFFFCD34D),
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 2,
-                        ),
-                        onPressed: auth.isLoading ? null : _openAdminPortal,
                       ),
                       const SizedBox(height: 18),
                       const Divider(color: Color(0xFFE2E8F0)),

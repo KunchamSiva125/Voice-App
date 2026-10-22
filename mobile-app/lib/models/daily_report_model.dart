@@ -6,8 +6,6 @@ class DailyReportModel {
   final double totalPaymentsInRupees;
   final int totalDiscountsPaise;
   final double totalDiscountsInRupees;
-  final int netChangePaise;
-  final double netChangeInRupees;
   final int totalOutstandingDebtPaise;
   final double totalOutstandingDebtInRupees;
   final int activeCustomersCount;
@@ -22,8 +20,6 @@ class DailyReportModel {
     required this.totalPaymentsInRupees,
     required this.totalDiscountsPaise,
     required this.totalDiscountsInRupees,
-    required this.netChangePaise,
-    required this.netChangeInRupees,
     required this.totalOutstandingDebtPaise,
     required this.totalOutstandingDebtInRupees,
     required this.activeCustomersCount,
@@ -40,8 +36,6 @@ class DailyReportModel {
       totalPaymentsInRupees: (json['totalPaymentsInRupees'] as num?)?.toDouble() ?? 0.0,
       totalDiscountsPaise: json['totalDiscountsPaise'] ?? 0,
       totalDiscountsInRupees: (json['totalDiscountsInRupees'] as num?)?.toDouble() ?? 0.0,
-      netChangePaise: json['netChangePaise'] ?? 0,
-      netChangeInRupees: (json['netChangeInRupees'] as num?)?.toDouble() ?? 0.0,
       totalOutstandingDebtPaise: json['totalOutstandingDebtPaise'] ?? 0,
       totalOutstandingDebtInRupees: (json['totalOutstandingDebtInRupees'] as num?)?.toDouble() ?? 0.0,
       activeCustomersCount: json['activeCustomersCount'] ?? 0,

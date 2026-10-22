@@ -15,9 +15,7 @@ import 'customer_detail_screen.dart';
 import 'manual_entry_screen.dart';
 import 'disambiguation_sheet.dart';
 import 'login_screen.dart';
-import 'admin_dashboard_screen.dart';
 import '../widgets/tiffin_logo.dart';
-import '../widgets/app_drawer.dart';
 
 class HomeVoiceScreen extends StatefulWidget {
   const HomeVoiceScreen({Key? key}) : super(key: key);
@@ -268,17 +266,9 @@ class _HomeVoiceScreenState extends State<HomeVoiceScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      drawer: const AppDrawer(currentItem: AppDrawerItem.voiceCounter),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
-        leading: Builder(
-          builder: (ctx) => IconButton(
-            icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A), size: 26),
-            tooltip: 'మెనూ (Menu)',
-            onPressed: () => Scaffold.of(ctx).openDrawer(),
-          ),
-        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -323,17 +313,6 @@ class _HomeVoiceScreenState extends State<HomeVoiceScreen> {
           ],
         ),
         actions: [
-          // Admin Dashboard Shortcut Button
-          IconButton(
-            icon: const Icon(Icons.dashboard_rounded, color: Color(0xFFD97706)),
-            tooltip: 'అడ్మిన్ డ్యాష్‌బోర్డ్ (Admin Dashboard)',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-              );
-            },
-          ),
           // Add New Customer Action Button in Header
           IconButton(
             icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFD97706)),

@@ -7,8 +7,6 @@ import '../models/voice_command_model.dart';
 import '../models/daily_report_model.dart';
 import '../models/user_model.dart';
 import '../models/transaction_model.dart';
-import '../models/outstanding_report_model.dart';
-import '../models/audit_event_model.dart';
 import 'storage_service.dart';
 
 class ApiService {
@@ -256,18 +254,6 @@ class ApiService {
     }
   }
 
-  // Reports: Outstanding Debt & Top Debtors
-  Future<OutstandingReportModel> getOutstandingReport({int top = 15}) async {
-    final url = Uri.parse('${ApiConfig.baseUrl}/reports/outstanding?top=$top');
-    final headers = await _getHeaders();
-    final response = await http.get(url, headers: headers).timeout(ApiConfig.requestTimeout);
-
-    if (response.statusCode == 200) {
-      return OutstandingReportModel.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load outstanding debt report');
-    }
-  }
 
   // Reports / Ledger: Transactions by Date Range
   Future<List<TransactionModel>> getTransactionsByRange({
@@ -482,32 +468,5 @@ class ApiService {
     }
   }
 
-  // Admin: Audit Events
-  Future<List<AuditEventModel>> getAuditEvents({int page = 0, int size = 30}) async {
-    final url = Uri.parse('${ApiConfig.baseUrl}/admin/audit-events?page=$page&size=$size');
-    final headers = await _getHeaders();
-    final response = await http.get(url, headers: headers).timeout(ApiConfig.requestTimeout);
-
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      final List content = body['content'] ?? [];
-      return content.map((e) => AuditEventModel.fromJson(e)).toList();
-    } else {
-      throw Exception('Failed to load audit events');
-    }
-  }
-
-  // Admin: Export URLs
-  String getExportCustomersUrl() {
-    return '${ApiConfig.baseUrl}/admin/exports/customers.csv';
-  }
-
-  String getExportTransactionsUrl({String? startDate, String? endDate}) {
-    final params = <String>[];
-    if (startDate != null && startDate.isNotEmpty) params.add('startDate=$startDate');
-    if (endDate != null && endDate.isNotEmpty) params.add('endDate=$endDate');
-    final queryString = params.isNotEmpty ? '?${params.join('&')}' : '';
-    return '${ApiConfig.baseUrl}/admin/exports/transactions.csv$queryString';
-  }
 }
 

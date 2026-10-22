@@ -75,6 +75,10 @@ export const App: React.FC = () => {
               <Route element={<ProtectedRoute user={user} allowedRoles={['OWNER', 'ADMIN']} />}>
                 <Route path="/corrections" element={<Corrections />} />
                 <Route path="/reports" element={<Reports />} />
+              </Route>
+
+              {/* Owner Only Protected Routes */}
+              <Route element={<ProtectedRoute user={user} allowedRoles={['OWNER']} />}>
                 <Route path="/migration" element={<OpeningBalanceMigration />} />
                 <Route path="/users" element={<UserManagement />} />
                 <Route path="/audit" element={<AuditLogs />} />
@@ -85,28 +89,10 @@ export const App: React.FC = () => {
             </Routes>
           </main>
         </div>
+      ) : (
         <Routes>
-          <Route
-            path="*"
-            element={
-              <div style={{ minHeight: '100vh', background: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif', padding: 24, textAlign: 'center' }}>
-                <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 20, padding: '36px 30px', maxWidth: 460 }}>
-                  <div style={{ fontSize: 44, marginBottom: 12 }}>📱✨</div>
-                  <h2 style={{ color: '#f59e0b', margin: '0 0 8px 0' }}>మహిమ టిఫిన్ సెంటర్</h2>
-                  <h3 style={{ color: '#fcd34d', margin: '0 0 16px 0' }}>100% Flutter Mobile Admin Portal</h3>
-                  <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-                    అడ్మిన్ పోర్టల్ ఇప్పుడు పూర్తిగా <strong>Flutter Mobile App</strong> గా మార్చబడింది.
-                  </p>
-                  <a
-                    href="http://localhost:5173"
-                    style={{ display: 'inline-block', background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: '#fff', textDecoration: 'none', fontWeight: 'bold', padding: '14px 28px', borderRadius: 12, boxShadow: '0 4px 12px rgba(217, 119, 6, 0.4)' }}
-                  >
-                    🚀 Open Flutter Admin Portal (http://localhost:5173)
-                  </a>
-                </div>
-              </div>
-            }
-          />
+          <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       )}
     </BrowserRouter>
