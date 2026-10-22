@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/tiffin_logo.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../config/api_config.dart';
 import 'home_voice_screen.dart';
 
@@ -96,6 +97,19 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _navigateToAdminPortal() async {
+    final uri = Uri.parse(ApiConfig.adminPortalUrl);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      try {
+        await launchUrl(uri);
+      } catch (e) {
+        debugPrint('Could not launch admin portal: $e');
+      }
+    }
+  }
+
   void _handleLogin() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final success = await auth.login(
@@ -117,6 +131,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 14, top: 4),
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.admin_panel_settings, size: 18, color: Color(0xFFF59E0B)),
+              label: const Text(
+                'Admin Portal / అడ్మిన్',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFCD34D),
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E293B),
+                foregroundColor: const Color(0xFFFCD34D),
+                side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                elevation: 3,
+              ),
+              onPressed: _navigateToAdminPortal,
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

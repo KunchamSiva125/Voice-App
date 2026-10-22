@@ -54,6 +54,15 @@ class ApiConfig {
     }
     return defaultLanUrl;
   }
+
+  static String get adminPortalUrl {
+    try {
+      final uri = Uri.parse(baseUrl);
+      return '${uri.scheme}://${uri.host}:5173';
+    } catch (_) {
+      return 'http://localhost:5173';
+    }
+  }
   
   // Storage keys
   static const String tokenKey = 'tiffin_auth_token';
