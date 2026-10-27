@@ -9,8 +9,8 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('Siva');
-  const [password, setPassword] = useState('Siva@1250');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,11 +37,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillCredentials = (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
   };
 
   return (
@@ -157,23 +152,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               {loading ? 'Logging in... / ప్రవేశిస్తోంది...' : 'Log In / లాగిన్ అవ్వండి'}
             </button>
           </form>
-
-          {/* Quick Credential Helper for Admin */}
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px' }}>
-              Admin Portal Access:
-            </p>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => fillCredentials('Siva', 'Siva@1250')}
-            >
-              Fill Admin Credentials (Siva)
-            </button>
-            <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>
-              Hotel Owners (9014798120, 9949795364) access the hotel khata via Mobile App.
-            </p>
-          </div>
         </div>
       </div>
     </div>

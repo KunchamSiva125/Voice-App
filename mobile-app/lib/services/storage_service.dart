@@ -6,14 +6,35 @@ import '../config/api_config.dart';
 import '../models/user_model.dart';
 
 class StorageService {
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
   Future<void> saveAuthToken(String token) async {
-    await _secureStorage.write(key: ApiConfig.tokenKey, value: token);
+    try {
+      await _secureStorage.write(key: ApiConfig.tokenKey, value: token);
+    } catch (e) {
+      debugPrint('SecureStorage write error, using fallback SharedPreferences: $e');
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(ApiConfig.tokenKey, token);
+      } catch (_) {}
+    }
   }
 
   Future<String?> getAuthToken() async {
-    return await _secureStorage.read(key: ApiConfig.tokenKey);
+    try {
+      final token = await _secureStorage.read(key: ApiConfig.tokenKey);
+      if (token != null && token.isNotEmpty) return token;
+    } catch (e) {
+      debugPrint('SecureStorage read error, using fallback SharedPreferences: $e');
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(ApiConfig.tokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> saveUserProfile(UserModel user) async {

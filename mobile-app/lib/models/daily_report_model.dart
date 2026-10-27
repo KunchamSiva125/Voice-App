@@ -43,4 +43,21 @@ class DailyReportModel {
       teluguSummary: json['teluguSummary'] ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'businessDate': businessDate,
+      'totalCreditsRecordedPaise': totalCreditsRecordedPaise,
+      'totalCreditsInRupees': totalCreditsInRupees,
+      'totalPaymentsCollectedPaise': totalPaymentsCollectedPaise,
+      'totalPaymentsInRupees': totalPaymentsInRupees,
+      'totalDiscountsPaise': totalDiscountsPaise,
+      'totalDiscountsInRupees': totalDiscountsInRupees,
+      'totalOutstandingDebtPaise': totalOutstandingDebtPaise,
+      'totalOutstandingDebtInRupees': totalOutstandingDebtInRupees,
+      'activeCustomersCount': activeCustomersCount,
+      'transactionsCountToday': transactionsCountToday,
+      'teluguSummary': teluguSummary,
+    };
+  }
 }

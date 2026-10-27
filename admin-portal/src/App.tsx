@@ -24,21 +24,48 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('tiffin_token');
-    if (token) {
-      api.getMe()
-        .then((userData) => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    // Safety timer: Max 3 seconds for session verification to prevent hanging on cold start or CORS issues
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Session verification timeout: redirecting to login');
+        localStorage.removeItem('tiffin_token');
+        localStorage.removeItem('tiffin_user');
+        setUser(null);
+        setLoading(false);
+      }
+    }, 3000);
+
+    api.getMe()
+      .then((userData) => {
+        if (isMounted) {
           setUser(userData);
           localStorage.setItem('tiffin_user', JSON.stringify(userData));
-        })
-        .catch(() => {
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
           localStorage.removeItem('tiffin_token');
           localStorage.removeItem('tiffin_user');
           setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+        }
+      })
+      .finally(() => {
+        clearTimeout(safetyTimer);
+        if (isMounted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   const handleLoginSuccess = (loggedInUser: User, token: string) => {
@@ -53,8 +80,48 @@ export const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: '#fff' }}>
-        Verifying Session / సెషన్ ధృవీకరిస్తోంది...
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0f172a',
+        color: '#fff',
+        gap: '16px'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid rgba(255, 255, 255, 0.15)',
+          borderTopColor: '#f59e0b',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <div style={{ fontSize: '15px', color: '#cbd5e1', fontWeight: 500 }}>
+          Verifying Session / సెషన్ ధృవీకరిస్తోంది...
+        </div>
+        <button
+          onClick={() => {
+            localStorage.removeItem('tiffin_token');
+            localStorage.removeItem('tiffin_user');
+            setUser(null);
+            setLoading(false);
+          }}
+          style={{
+            marginTop: '8px',
+            padding: '8px 18px',
+            background: '#1e293b',
+            border: '1px solid #475569',
+            color: '#fcd34d',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            fontWeight: 600
+          }}
+        >
+          లాగిన్ పేజీకి వెళ్లండి (Go to Login)
+        </button>
       </div>
     );
   }

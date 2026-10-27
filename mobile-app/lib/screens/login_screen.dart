@@ -14,14 +14,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usernameController = TextEditingController(text: '9014798120');
-  final _passwordController = TextEditingController(text: '9014798120');
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
 
-  void _fillAccount(String user, String pass) {
-    setState(() {
-      _usernameController.text = user;
-      _passwordController.text = pass;
-    });
+  @override
+  void initState() {
+    super.initState();
+    ApiConfig.prewarmServer();
   }
 
   @override
@@ -33,66 +32,135 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showServerSettingsDialog() {
     final controller = TextEditingController(text: ApiConfig.currentConfiguredUrl);
+    bool isTesting = false;
+    String? testResult;
+    bool? testSuccess;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.dns, color: Color(0xFFD97706)),
-            SizedBox(width: 8),
-            Text('సర్వర్ చిరునామా (Server URL)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'ఫోన్‌లో ఎక్కడినుండైనా (4G/5G/Wi-Fi) వాడటానికి సర్వర్ URL నమోదు చేయండి:',
-              style: TextStyle(fontSize: 12.5, color: Color(0xFF475569)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: 'e.g. https://xyz.ngrok-free.app or http://192.168.1.10:8080',
-                labelText: 'Server Base URL',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '💡 చిట్కా: Cloud URL (ngrok/Cloudflare/Render) ఇస్తే ప్రపంచంలో ఎక్కడినుండైనా పనిచేస్తుంది.',
-              style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await ApiConfig.resetToDefault();
-              if (mounted) setState(() {});
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('డీఫాల్ట్ (Reset)'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: const [
+              Icon(Icons.dns, color: Color(0xFFD97706)),
+              SizedBox(width: 8),
+              Text('సర్వర్ చిరునామా (Server URL)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD97706),
-              foregroundColor: Colors.white,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'ఫోన్‌లో ఎక్కడినుండైనా (4G/5G/Wi-Fi) వాడటానికి సర్వర్ URL నమోదు చేయండి:',
+                  style: TextStyle(fontSize: 12.5, color: Color(0xFF475569)),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: 'e.g. https://*.trycloudflare.com or http://192.168.1.10:8080',
+                    labelText: 'Server Base URL',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  icon: isTesting
+                      ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.wifi_tethering, size: 16),
+                  label: Text(isTesting ? 'టెస్ట్ చేస్తోంది...' : 'టెస్ట్ కనెక్షన్ (Test Connection)'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFD97706),
+                    side: const BorderSide(color: Color(0xFFD97706)),
+                  ),
+                  onPressed: isTesting
+                      ? null
+                      : () async {
+                          final text = controller.text.trim();
+                          if (text.isEmpty) return;
+                          setDialogState(() {
+                            isTesting = true;
+                            testResult = null;
+                            testSuccess = null;
+                          });
+                          final res = await ApiConfig.testConnection(text);
+                          setDialogState(() {
+                            isTesting = false;
+                            testSuccess = res['success'] == true;
+                            testResult = res['message'];
+                          });
+                        },
+                ),
+                if (testResult != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: (testSuccess ?? false) ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: (testSuccess ?? false) ? const Color(0xFFA7F3D0) : const Color(0xFFFECACA),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          (testSuccess ?? false) ? Icons.check_circle : Icons.error_outline,
+                          size: 16,
+                          color: (testSuccess ?? false) ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            testResult!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: (testSuccess ?? false) ? const Color(0xFF065F46) : const Color(0xFF991B1B),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                const Text(
+                  '💡 చిట్కా: Cloudflare URL వాడుతుంటే మీ కంప్యూటర్‌లో start-tunnel.bat ప్రారంభమై ఉండాలి.',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                ),
+              ],
             ),
-            onPressed: () async {
-              if (controller.text.trim().isNotEmpty) {
-                await ApiConfig.setCustomBaseUrl(controller.text.trim());
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await ApiConfig.resetToDefault();
                 if (mounted) setState(() {});
-              }
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('సేవ్ చేయండి (Save)'),
-          ),
-        ],
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('డీఫాల్ట్ (Reset)'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD97706),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                if (controller.text.trim().isNotEmpty) {
+                  await ApiConfig.setCustomBaseUrl(controller.text.trim());
+                  if (mounted) setState(() {});
+                }
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('సేవ్ చేయండి (Save)'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -264,52 +332,34 @@ class _LoginScreenState extends State<LoginScreen> {
                           elevation: 3,
                         ),
                         child: auth.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'కనెక్ట్ చేస్తోంది... (Connecting...)',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               )
                             : const Text(
                                 'ప్రవేశించండి (Log In)',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                               ),
                       ),
-                      const SizedBox(height: 18),
-                      const Divider(color: Color(0xFFE2E8F0)),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'ఖాతా ఎంచుకోండి (Select Account):',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          ActionChip(
-                            label: const Text('యజమాని 1 (Owner 1)', style: TextStyle(fontSize: 11)),
-                            backgroundColor: const Color(0xFFFEF3C7),
-                            onPressed: () => _fillAccount('9014798120', '9014798120'),
-                          ),
-                          ActionChip(
-                            label: const Text('యజమాని 2 (Owner 2)', style: TextStyle(fontSize: 11)),
-                            backgroundColor: const Color(0xFFFEF3C7),
-                            onPressed: () => _fillAccount('9949795364', '9949795364'),
-                          ),
-                          ActionChip(
-                            label: const Text('అడ్మిన్ (Admin)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            backgroundColor: const Color(0xFFE2E8F0),
-                            onPressed: () => _fillAccount('siva', 'Siva@1250'),
-                          ),
-                          ActionChip(
-                            label: const Text('మాస్టర్ ఓనర్ (owner@tiffin.local)', style: TextStyle(fontSize: 11)),
-                            backgroundColor: const Color(0xFFEDE9FE),
-                            onPressed: () => _fillAccount('owner@tiffin.local', 'Password123!'),
-                          ),
-                        ],
-                      ),
+                      if (auth.isLoading) ...[
+                        const SizedBox(height: 10),
+                        const Text(
+                          '💡 సర్వర్ సిద్ధమవుతోంది (మొదటిసారి కొన్ని సెకన్లు సమయం పట్టవచ్చు)...',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 11, color: Color(0xFFD97706), fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ],
                   ),
                 ),

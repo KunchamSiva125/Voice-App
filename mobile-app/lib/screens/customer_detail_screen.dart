@@ -23,19 +23,29 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   Map<String, dynamic>? _balanceData;
   List<Map<String, dynamic>> _transactions = [];
-  bool _isLoading = true;
+  bool _isLoadingTransactions = true;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    _balanceData = {
+      'customerId': widget.customer.id,
+      'customerName': widget.customer.name,
+      'phoneNumber': widget.customer.phoneNumber,
+      'outstandingBalancePaise': widget.customer.outstandingBalancePaise,
+      'balanceInRupees': widget.customer.balanceInRupees,
+      'totalCreditsPaise': widget.customer.outstandingBalancePaise,
+      'totalPaymentsPaise': 0,
+      'totalDiscountsPaise': 0,
+    };
     _loadData();
     _tts.initialize();
   }
 
   Future<void> _loadData() async {
     setState(() {
-      _isLoading = true;
+      _isLoadingTransactions = true;
       _errorMessage = null;
     });
 
@@ -49,13 +59,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         setState(() {
           _balanceData = results[0] as Map<String, dynamic>;
           _transactions = results[1] as List<Map<String, dynamic>>;
-          _isLoading = false;
+          _isLoadingTransactions = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isLoadingTransactions = false;
           _errorMessage = e.toString().replaceAll('Exception: ', '');
         });
       }
@@ -398,9 +408,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD97706)))
-          : RefreshIndicator(
+      body: RefreshIndicator(
               onRefresh: _loadData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -561,7 +569,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     const SizedBox(height: 12),
 
                     // Transactions List
-                    if (_transactions.isEmpty)
+                    if (_isLoadingTransactions && _transactions.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CircularProgressIndicator(color: Color(0xFFD97706), strokeWidth: 2.5),
+                        ),
+                      )
+                    else if (_transactions.isEmpty)
                       Container(
                         padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(

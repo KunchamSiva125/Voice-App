@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -24,14 +25,45 @@ class HomeVoiceScreen extends StatefulWidget {
   State<HomeVoiceScreen> createState() => _HomeVoiceScreenState();
 }
 
-class _HomeVoiceScreenState extends State<HomeVoiceScreen> {
+class _HomeVoiceScreenState extends State<HomeVoiceScreen> with WidgetsBindingObserver {
+  Timer? _autoSyncTimer;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LedgerProvider>(context, listen: false).fetchTodaySummary();
-      Provider.of<CustomerProvider>(context, listen: false).searchCustomers('');
+      _syncAll();
     });
+    // Auto-sync every 20 seconds while app is in foreground so updates made by another owner show up automatically!
+    _autoSyncTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      _syncAll();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _autoSyncTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // When owner switches back to app or unlocks phone, immediately fetch latest updates from other devices
+    if (state == AppLifecycleState.resumed) {
+      _syncAll();
+    }
+  }
+
+  Future<void> _syncAll() async {
+    if (!mounted) return;
+    try {
+      await Future.wait([
+        Provider.of<LedgerProvider>(context, listen: false).fetchTodaySummary(),
+        Provider.of<CustomerProvider>(context, listen: false).searchCustomers(''),
+      ]);
+    } catch (_) {}
   }
 
   void _showOlderCustomerBalancePicker(BuildContext context) {
@@ -326,6 +358,19 @@ class _HomeVoiceScreenState extends State<HomeVoiceScreen> {
             onPressed: () => VoiceRemoveCustomerSheet.show(context),
           ),
           IconButton(
+            icon: const Icon(Icons.sync, color: Color(0xFFD97706)),
+            tooltip: 'తాజా వివరాలు రీఫ్రెష్ (Sync Latest)',
+            onPressed: () {
+              _syncAll();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('తాజా వివరాలు సింక్ చేయబడ్డాయి (Synced with cloud)!'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.people_outline, color: Color(0xFF475569)),
             tooltip: 'కస్టమర్ల జాబితా (Customers List)',
             onPressed: () {
@@ -350,7 +395,11 @@ class _HomeVoiceScreenState extends State<HomeVoiceScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: RefreshIndicator(
+        color: const Color(0xFFD97706),
+        onRefresh: _syncAll,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
@@ -952,6 +1001,7 @@ class _HomeVoiceScreenState extends State<HomeVoiceScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

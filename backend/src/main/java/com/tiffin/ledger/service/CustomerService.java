@@ -71,6 +71,24 @@ public class CustomerService {
         } catch (Exception e) {
             log.warn("Could not synchronize customer smart aliases on startup: {}", e.getMessage());
         }
+
+        try {
+            List<Customer> allCustomers = customerRepository.findAll();
+            int updatedBalances = 0;
+            for (Customer c : allCustomers) {
+                long trueBalance = ledgerService.calculateOutstandingBalancePaise(c.getId());
+                if (c.getCurrentBalancePaise() != trueBalance) {
+                    c.setCurrentBalancePaise(trueBalance);
+                    customerRepository.save(c);
+                    updatedBalances++;
+                }
+            }
+            if (updatedBalances > 0) {
+                log.info("Synchronized current balance for {} customer(s)", updatedBalances);
+            }
+        } catch (Exception e) {
+            log.warn("Could not synchronize customer balances on startup: {}", e.getMessage());
+        }
     }
 
     public Page<CustomerDto> listCustomers(String search, CustomerStatus status, Pageable pageable) {
@@ -83,17 +101,13 @@ public class CustomerService {
             customers = customerRepository.findByStatus(targetStatus, pageable);
         }
 
-        return customers.map(c -> {
-            long balance = ledgerService.calculateOutstandingBalancePaise(c.getId());
-            return new CustomerDto(c, balance);
-        });
+        return customers.map(CustomerDto::new);
     }
 
     public CustomerDto getCustomerById(String id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + id));
-        long balance = ledgerService.calculateOutstandingBalancePaise(customer.getId());
-        return new CustomerDto(customer, balance);
+        return new CustomerDto(customer);
     }
 
     @Transactional

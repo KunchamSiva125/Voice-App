@@ -1,6 +1,8 @@
 package com.tiffin.ledger.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "customers")
+@CompoundIndexes({
+    @CompoundIndex(name = "status_balance_idx", def = "{'status': 1, 'currentBalancePaise': -1}")
+})
 public class Customer {
 
     @Id
@@ -28,6 +33,9 @@ public class Customer {
 
     @Indexed
     private CustomerStatus status = CustomerStatus.ACTIVE;
+
+    @Indexed
+    private long currentBalancePaise = 0L;
 
     private Instant createdAt = Instant.now();
 
@@ -81,6 +89,9 @@ public class Customer {
 
     public CustomerStatus getStatus() { return status; }
     public void setStatus(CustomerStatus status) { this.status = status; }
+
+    public long getCurrentBalancePaise() { return currentBalancePaise; }
+    public void setCurrentBalancePaise(long currentBalancePaise) { this.currentBalancePaise = currentBalancePaise; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

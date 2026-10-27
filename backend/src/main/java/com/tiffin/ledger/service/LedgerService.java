@@ -138,6 +138,8 @@ public class LedgerService {
         );
 
         LedgerTransaction saved = transactionRepository.save(tx);
+        customer.setCurrentBalancePaise(updatedBalance);
+        customerRepository.save(customer);
 
         auditService.logEvent(actor.getId(), actor.getUsername(), "TRANSACTION_CREATED",
                 "TRANSACTION", saved.getId(), "Credit added: " + CurrencyUtil.formatInr(saved.getAmountPaise()),
@@ -216,6 +218,8 @@ public class LedgerService {
         );
 
         LedgerTransaction saved = transactionRepository.save(tx);
+        customer.setCurrentBalancePaise(updatedBalance);
+        customerRepository.save(customer);
 
         auditService.logEvent(actor.getId(), actor.getUsername(), "TRANSACTION_CREATED",
                 "TRANSACTION", saved.getId(), "Payment recorded: " + CurrencyUtil.formatInr(saved.getAmountPaise()),
@@ -276,6 +280,8 @@ public class LedgerService {
         tx.setCorrectionReason(request.getReason());
 
         LedgerTransaction saved = transactionRepository.save(tx);
+        customer.setCurrentBalancePaise(updatedBalance);
+        customerRepository.save(customer);
 
         auditService.logEvent(actor.getId(), actor.getUsername(), "DISCOUNT_APPLIED",
                 "TRANSACTION", saved.getId(), "Discount applied: " + CurrencyUtil.formatInr(saved.getAmountPaise()) + " Reason: " + request.getReason(),
@@ -343,6 +349,8 @@ public class LedgerService {
         );
 
         LedgerTransaction saved = transactionRepository.save(tx);
+        customer.setCurrentBalancePaise(updatedBalance);
+        customerRepository.save(customer);
 
         auditService.logEvent(actor.getId(), actor.getUsername(), "OPENING_BALANCE_IMPORTED",
                 "TRANSACTION", saved.getId(), "Imported opening debt: " + CurrencyUtil.formatInr(saved.getAmountPaise()),
@@ -406,6 +414,8 @@ public class LedgerService {
         reversalTx.setStatus(TransactionStatus.POSTED);
 
         LedgerTransaction savedReversal = transactionRepository.save(reversalTx);
+        customer.setCurrentBalancePaise(updatedBalance);
+        customerRepository.save(customer);
 
         // Update original transaction linkage
         origTx.setHasReversal(true);

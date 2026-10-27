@@ -7,13 +7,19 @@ echo Building Release APK for Android...
 echo ========================================================
 echo.
 echo 1. Checking Flutter environment...
-flutter doctor
+call flutter doctor
 echo.
 echo 2. Running Flutter Build APK (Release)...
-flutter build apk --release
-echo.
-echo ========================================================
-echo APK Location:
-echo %~dp0mobile-app\build\app\outputs\flutter-apk\app-release.apk
-echo ========================================================
+call flutter build apk --release
+if %ERRORLEVEL% EQU 0 (
+    copy /Y "%~dp0mobile-app\build\app\outputs\flutter-apk\app-release.apk" "%~dp0Mahima-Tiffin-Centre.apk"
+    echo.
+    echo ========================================================
+    echo SUCCESS! New APK created and updated at:
+    echo %~dp0Mahima-Tiffin-Centre.apk
+    echo ========================================================
+) else (
+    echo.
+    echo [ERROR] Build failed. Please check errors above.
+)
 pause

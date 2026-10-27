@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class ApiConfig {
   static const String _prefKey = 'custom_server_base_url';
   static String? _customBaseUrl;
 
-  static const String defaultLanUrl = 'http://10.32.90.82:8080/api';
+  static const String defaultCloudUrl = 'https://voice-app-0cys.onrender.com/api';
+  static const String defaultLanUrl = 'http://10.32.235.82:8080/api';
   static const String defaultWebUrl = 'http://localhost:8080/api';
 
   static Future<void> loadCustomBaseUrl() async {
@@ -13,7 +15,12 @@ class ApiConfig {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString(_prefKey);
       if (saved != null && saved.trim().isNotEmpty) {
-        _customBaseUrl = saved.trim();
+        if (saved.contains('trycloudflare.com') || saved.contains('ngrok-free.dev')) {
+          // Auto-migrate from old temporary quick tunnels to permanent cloud Render backend
+          await resetToDefault();
+        } else {
+          _customBaseUrl = saved.trim();
+        }
       }
     } catch (_) {}
   }
@@ -42,7 +49,7 @@ class ApiConfig {
   }
 
   static String get currentConfiguredUrl {
-    return _customBaseUrl ?? ((kIsWeb || defaultTargetPlatform == TargetPlatform.windows) ? defaultWebUrl : defaultLanUrl);
+    return _customBaseUrl ?? ((kIsWeb || defaultTargetPlatform == TargetPlatform.windows) ? defaultWebUrl : defaultCloudUrl);
   }
 
   static String get baseUrl {
@@ -52,7 +59,7 @@ class ApiConfig {
     if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       return defaultWebUrl;
     }
-    return defaultLanUrl;
+    return defaultCloudUrl;
   }
 
   static String get adminPortalUrl {
@@ -69,5 +76,43 @@ class ApiConfig {
   static const String userKey = 'tiffin_user_profile';
   
   // Timeout settings
-  static const Duration requestTimeout = Duration(seconds: 15);
+  static const Duration requestTimeout = Duration(seconds: 35);
+  static const Duration coldStartTimeout = Duration(seconds: 75);
+
+  /// Silently pings the backend to initiate a cold start in the background as soon as the app opens.
+  static void prewarmServer() {
+    try {
+      final uri = Uri.parse('$baseUrl/health');
+      http.get(
+        uri,
+        headers: {'ngrok-skip-browser-warning': 'true', 'Accept': 'application/json'},
+      ).timeout(coldStartTimeout).catchError((_) => http.Response('', 500));
+    } catch (_) {}
+  }
+
+  /// Test connectivity to a given server base URL
+  static Future<Map<String, dynamic>> testConnection(String url) async {
+    String cleanUrl = url.trim();
+    if (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1);
+    }
+    if (!cleanUrl.endsWith('/api')) {
+      cleanUrl = '$cleanUrl/api';
+    }
+    try {
+      final res = await http.get(
+        Uri.parse('$cleanUrl/health'),
+        headers: {'ngrok-skip-browser-warning': 'true', 'Accept': 'application/json'},
+      ).timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) {
+        return {'success': true, 'message': 'సర్వర్ సిద్ధంగా ఉంది (Connected: Status UP)'};
+      } else if (res.statusCode == 530 || res.statusCode == 502) {
+        return {'success': false, 'message': 'క్లౌడ్‌ఫ్లేర్ టన్నెల్ ఆఫ్ అయింది (Cloudflare tunnel down)'};
+      } else {
+        return {'success': false, 'message': 'సర్వర్ స్టేటస్ కోడ్: ${res.statusCode}'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'కనెక్ట్ కాలేకపోయాము (Unreachable: Check Wi-Fi or tunnel)'};
+    }
+  }
 }

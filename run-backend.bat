@@ -15,11 +15,15 @@ if exist ".env" (
 )
 
 if "%MONGODB_URI%"=="" (
-    set "MONGODB_URI=mongodb+srv://shivakuncham125_db_user:DKOQyeK3skKpfASl@cluster1.66u9c2g.mongodb.net/tiffin_ledger_db?retryWrites=true&w=majority"
+    set "MONGODB_URI=mongodb://localhost:27017/tiffin_ledger_db"
 )
 
-echo [INFO] MongoDB URI configured for Atlas Cloud.
+echo [INFO] MongoDB URI: %MONGODB_URI%
 echo ========================================================
 
-"D:\Intellij Ide\IntelliJ IDEA 2026.2.3\plugins\maven-plugin\lib\maven3\bin\mvn.cmd" spring-boot:run
+if exist "mvn.cmd" (
+    call "mvn.cmd" spring-boot:run
+) else (
+    "D:\Intellij Ide\IntelliJ IDEA 2026.2.3\plugins\maven-plugin\lib\maven3\bin\mvn.cmd" spring-boot:run
+)
 pause

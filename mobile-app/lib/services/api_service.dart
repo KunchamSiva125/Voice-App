@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import '../config/api_config.dart';
@@ -18,6 +20,7 @@ class ApiService {
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
     };
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
@@ -28,25 +31,55 @@ class ApiService {
     return headers;
   }
 
+  String _parseErrorMessage(http.Response response, {String defaultMessage = 'Operation failed'}) {
+    if (response.statusCode == 401) {
+      return 'యూజర్‌నేమ్ లేదా పాస్‌వర్డ్ తప్పు (Invalid username or password).';
+    }
+    if (response.statusCode == 403) {
+      return 'ఈ ఆపరేషన్‌కు అనుమతి లేదు (Access denied).';
+    }
+    if (response.statusCode == 530 || response.statusCode == 502 || response.statusCode == 503 || response.statusCode == 504) {
+      return 'క్లౌడ్‌ఫ్లేర్ లేదా సర్వర్ టన్నెల్ ఆఫ్ అయింది (Cloudflare tunnel down/inactive).\nదయచేసి మీ కంప్యూటర్‌లో start-tunnel.bat ప్రారంభించి కొత్త URL ను Server Settings లో ఇవ్వండి.';
+    }
+    try {
+      final body = jsonDecode(response.body);
+      if (body is Map && body['message'] != null && body['message'].toString().trim().isNotEmpty) {
+        return body['message'].toString();
+      }
+    } catch (_) {}
+    return '$defaultMessage (Status ${response.statusCode})';
+  }
+
   // Auth: Login
   Future<Map<String, dynamic>> login(String username, String password) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/auth/login');
-    final response = await http
-        .post(
-          url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({'username': username, 'password': password}),
-        )
-        .timeout(ApiConfig.requestTimeout);
+    try {
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'ngrok-skip-browser-warning': 'true',
+            },
+            body: jsonEncode({'username': username, 'password': password}),
+          )
+          .timeout(ApiConfig.coldStartTimeout);
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      final body = jsonDecode(response.body);
-      throw Exception(body['message'] ?? 'Login failed. Please verify credentials.');
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception(_parseErrorMessage(response, defaultMessage: 'Login failed. Please verify credentials.'));
+      }
+    } on SocketException catch (_) {
+      throw Exception('సర్వర్ అందుబాటులో లేదు (Server unreachable).\nదయచేసి ఇంటర్నెట్ కనెక్షన్ సరిచూసుకోండి.');
+    } on TimeoutException catch (_) {
+      throw Exception('క్లౌడ్ సర్వర్ మేల్కొనడంలో ఆలస్యమైంది (Server waking up timeout).\nదయచేసి కొన్ని సెకన్లు ఆగి మళ్ళీ లాగిన్ నొక్కండి.');
+    } on http.ClientException catch (_) {
+      throw Exception('సర్వర్‌కు కనెక్ట్ కాలేకపోయాము (Failed to connect to server).\nదయచేసి Server Settings లో సరైన URL ఇవ్వండి.');
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception(e.toString());
     }
   }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/customer_provider.dart';
@@ -18,6 +19,7 @@ class CustomerListScreen extends StatefulWidget {
 class _CustomerListScreenState extends State<CustomerListScreen> {
   final _searchController = TextEditingController();
   final TextToSpeechService _tts = TextToSpeechService();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -32,6 +34,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     _tts.stop();
     super.dispose();
@@ -118,14 +121,17 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                 ),
               ),
               onChanged: (val) {
-                customerProvider.searchCustomers(val);
+                _debounce?.cancel();
+                _debounce = Timer(const Duration(milliseconds: 300), () {
+                  customerProvider.searchCustomers(val);
+                });
               },
             ),
           ),
 
           // List View
           Expanded(
-            child: customerProvider.isLoading
+            child: (customerProvider.isLoading && customerProvider.customers.isEmpty)
                 ? const Center(child: CircularProgressIndicator())
                 : customerProvider.customers.isEmpty
                     ? Center(
@@ -186,7 +192,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                               leading: CircleAvatar(
                                 backgroundColor: const Color(0xFFFEF3C7),
                                 child: Text(
-                                  customer.name.substring(0, 1).toUpperCase(),
+                                  customer.name.isNotEmpty ? customer.name.substring(0, 1).toUpperCase() : 'C',
                                   style: const TextStyle(
                                     color: Color(0xFFB45309),
                                     fontWeight: FontWeight.bold,

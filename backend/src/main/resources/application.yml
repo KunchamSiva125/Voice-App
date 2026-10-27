@@ -2,6 +2,10 @@ server:
   port: ${PORT:8080}
   servlet:
     context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 512
 
 spring:
   application:
@@ -18,7 +22,7 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:c4897f225d30df9313bbd59a721c5b8b92d6e32d665b16e872d8816c14e08f2a}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
+    expiration-ms: ${JWT_EXPIRATION_MS:3153600000000} # 100 years (Permanent / No session expiration)
   bootstrap:
     owner-name: ${INITIAL_OWNER_NAME:Apparao (Owner)}
     owner-username: ${INITIAL_OWNER_USERNAME:owner@tiffin.local}
@@ -26,6 +30,9 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
   timezone: Asia/Kolkata
+  keep-alive:
+    url: ${KEEP_ALIVE_URL:https://voice-app-0cys.onrender.com/api/health}
+    enabled: ${KEEP_ALIVE_ENABLED:true}
 
 springdoc:
   api-docs:

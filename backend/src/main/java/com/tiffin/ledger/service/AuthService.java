@@ -56,13 +56,13 @@ public class AuthService {
 
     @PostConstruct
     public void initBootstrapUsers() {
-        // Ensure ONLY the approved 3 system accounts exist
+        // Ensure all approved system accounts exist
         ensureUser("Owner 1", "9014798120", "9014798120", Role.OWNER);
         ensureUser("Owner 2", "9949795364", "9949795364", Role.OWNER);
         ensureUser("Siva (Admin)", "siva", "Siva@1250", Role.ADMIN);
+        ensureUser("Master Owner", "owner@tiffin.local", "Password123!", Role.OWNER);
 
-        // Remove outdated bootstrap/placeholder accounts if present
-        userRepository.findByUsername("owner@tiffin.local").ifPresent(userRepository::delete);
+        // Remove outdated placeholder accounts if present
         userRepository.findByUsername("admin@tiffin.local").ifPresent(userRepository::delete);
         userRepository.findByUsername("kalyan@tiffin.local").ifPresent(userRepository::delete);
     }
@@ -106,8 +106,8 @@ public class AuthService {
                     "USER", principal.getId(), "Successful login", null, null, clientIp);
 
             return new AuthResponse(token, tokenProvider.getExpirationMs(), userDto);
-        } catch (BadCredentialsException e) {
-            log.warn("Failed login attempt for username: {}", cleanUsername);
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            log.warn("Failed login attempt for username: {} - {}", cleanUsername, e.getMessage());
             throw new BadCredentialsException("Invalid username or password");
         }
     }

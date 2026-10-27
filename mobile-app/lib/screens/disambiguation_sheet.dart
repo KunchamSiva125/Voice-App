@@ -60,7 +60,7 @@ class DisambiguationSheet extends StatelessWidget {
                   leading: CircleAvatar(
                     backgroundColor: const Color(0xFFFEF3C7),
                     child: Text(
-                      customer.name.substring(0, 1).toUpperCase(),
+                      customer.name.isNotEmpty ? customer.name.substring(0, 1).toUpperCase() : 'C',
                       style: const TextStyle(color: Color(0xFFB45309), fontWeight: FontWeight.bold),
                     ),
                   ),

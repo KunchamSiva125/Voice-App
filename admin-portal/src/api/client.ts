@@ -1,16 +1,28 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const getApiBaseUrl = (): string => {
+  const custom = localStorage.getItem('admin_custom_api_url');
+  if (custom && custom.trim()) {
+    return custom.trim();
+  }
+  // When running in local browser, default to Vite proxy '/api' to talk to local backend
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return import.meta.env.VITE_API_URL || '/api';
+  }
+  return import.meta.env.VITE_API_URL || 'https://voice-app-0cys.onrender.com/api';
+};
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
+  timeout: 8000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Interceptor to inject JWT Bearer Token
+// Interceptor to inject JWT Bearer Token and dynamic baseURL
 apiClient.interceptors.request.use((config) => {
+  config.baseURL = getApiBaseUrl();
   const token = localStorage.getItem('tiffin_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -158,7 +170,7 @@ export const api = {
     return res.data;
   },
   getMe: async (): Promise<User> => {
-    const res = await apiClient.get('/auth/me');
+    const res = await apiClient.get('/auth/me', { timeout: 3500 });
     return res.data;
   },
 
@@ -261,9 +273,9 @@ export const api = {
     const res = await apiClient.get('/admin/audit-events', { params: { page, size } });
     return res.data;
   },
-  getExportCustomersUrl: () => `${API_BASE_URL}/admin/exports/customers.csv`,
+  getExportCustomersUrl: () => `${getApiBaseUrl()}/admin/exports/customers.csv`,
   getExportTransactionsUrl: (startDate?: string, endDate?: string) => {
-    let url = `${API_BASE_URL}/admin/exports/transactions.csv`;
+    let url = `${getApiBaseUrl()}/admin/exports/transactions.csv`;
     if (startDate && endDate) {
       url += `?startDate=${startDate}&endDate=${endDate}`;
     }

@@ -23,7 +23,7 @@ public class JwtTokenProvider {
 
     public JwtTokenProvider(
             @Value("${app.jwt.secret:defaultSecretKeyForDevelopmentMustBeAtLeast32BytesLongForSecurity}") String secret,
-            @Value("${app.jwt.expiration-ms:86400000}") long expirationMs) {
+            @Value("${app.jwt.expiration-ms:3153600000000}") long expirationMs) {
         // Ensure key is at least 256 bits (32 bytes)
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
@@ -31,7 +31,8 @@ public class JwtTokenProvider {
             keyBytes = padded.getBytes(StandardCharsets.UTF_8);
         }
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.expirationMs = expirationMs;
+        // 100 years (permanent session / no expiration)
+        this.expirationMs = expirationMs > 0 ? expirationMs : 3153600000000L;
     }
 
     public String generateToken(UserPrincipal principal) {

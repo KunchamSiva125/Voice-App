@@ -36,4 +36,7 @@ public interface CustomerRepository extends MongoRepository<Customer, String> {
     Optional<Customer> findByPhoneNumberAndStatus(String phoneNumber, CustomerStatus status);
 
     long countByStatus(CustomerStatus status);
+
+    List<Customer> findByStatusAndCurrentBalancePaiseGreaterThanOrderByCurrentBalancePaiseDesc(
+            CustomerStatus status, long minBalance);
 }

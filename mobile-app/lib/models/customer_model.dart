@@ -34,4 +34,18 @@ class CustomerModel {
       balanceInRupees: (json['balanceInRupees'] as num?)?.toDouble() ?? 0.0,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'normalizedName': normalizedName,
+      'aliases': aliases,
+      'phoneNumber': phoneNumber,
+      'notes': notes,
+      'status': status,
+      'outstandingBalancePaise': outstandingBalancePaise,
+      'balanceInRupees': balanceInRupees,
+    };
+  }
 }

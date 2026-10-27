@@ -20,6 +20,9 @@ public class CustomerDto {
     private Instant updatedAt;
 
     public CustomerDto() {}
+    public CustomerDto(Customer customer) {
+        this(customer, customer != null ? customer.getCurrentBalancePaise() : 0L);
+    }
     public CustomerDto(Customer customer, long balancePaise) {
         if (customer != null) {
             this.id = customer.getId();

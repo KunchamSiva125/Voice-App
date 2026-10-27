@@ -66,7 +66,7 @@ public class ReportService {
         List<Customer> activeCustomers = customerRepository.findByStatus(CustomerStatus.ACTIVE);
         long totalOutstandingDebt = 0L;
         for (Customer c : activeCustomers) {
-            long bal = ledgerService.calculateOutstandingBalancePaise(c.getId());
+            long bal = c.getCurrentBalancePaise();
             if (bal > 0) {
                 totalOutstandingDebt += bal;
             }
@@ -87,28 +87,22 @@ public class ReportService {
     }
 
     public OutstandingReportDto getOutstandingDebtReport(int topCount) {
-        List<Customer> activeCustomers = customerRepository.findByStatus(CustomerStatus.ACTIVE);
+        List<Customer> debtors = customerRepository
+                .findByStatusAndCurrentBalancePaiseGreaterThanOrderByCurrentBalancePaiseDesc(CustomerStatus.ACTIVE, 0L);
         long totalDebt = 0L;
-        long debtorsCount = 0L;
-
-        List<TopDebtorDto> debtors = new ArrayList<>();
-
-        for (Customer c : activeCustomers) {
-            long bal = ledgerService.calculateOutstandingBalancePaise(c.getId());
-            if (bal > 0) {
-                totalDebt += bal;
-                debtorsCount++;
-                debtors.add(new TopDebtorDto(c.getId(), c.getName(), c.getPhoneNumber(), bal));
-            }
+        for (Customer c : debtors) {
+            totalDebt += c.getCurrentBalancePaise();
         }
 
-        // Sort descending by outstanding debt
-        debtors.sort((a, b) -> Long.compare(b.getBalancePaise(), a.getBalancePaise()));
+        List<TopDebtorDto> topList = debtors.stream()
+                .limit(Math.max(topCount, 5))
+                .map(c -> new TopDebtorDto(c.getId(), c.getName(), c.getPhoneNumber(), c.getCurrentBalancePaise()))
+                .collect(Collectors.toList());
 
         OutstandingReportDto dto = new OutstandingReportDto();
         dto.setTotalOutstandingDebtPaise(totalDebt);
-        dto.setTotalDebtorsCount(debtorsCount);
-        dto.setTopDebtors(debtors.stream().limit(Math.max(topCount, 5)).collect(Collectors.toList()));
+        dto.setTotalDebtorsCount((long) debtors.size());
+        dto.setTopDebtors(topList);
 
         return dto;
     }
