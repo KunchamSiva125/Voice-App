@@ -6,17 +6,18 @@ class ApiConfig {
   static const String _prefKey = 'custom_server_base_url';
   static String? _customBaseUrl;
 
-  static const String defaultCloudUrl = 'https://voice-app-0cys.onrender.com/api';
-  static const String defaultLanUrl = 'http://10.32.235.82:8080/api';
-  static const String defaultWebUrl = 'http://localhost:8080/api';
+  static const String serverUrl = 'https://voice-app-0cys.onrender.com/api';
+  static const String defaultCloudUrl = serverUrl;
+  static const String defaultLanUrl = serverUrl;
+  static const String defaultWebUrl = serverUrl;
 
   static Future<void> loadCustomBaseUrl() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString(_prefKey);
       if (saved != null && saved.trim().isNotEmpty) {
-        if (saved.contains('trycloudflare.com') || saved.contains('ngrok-free.dev')) {
-          // Auto-migrate from old temporary quick tunnels to permanent cloud Render backend
+        if (!saved.contains('voice-app-0cys.onrender.com')) {
+          // Auto-migrate from any old local LAN IP or tunnels to the permanent Render backend
           await resetToDefault();
         } else {
           _customBaseUrl = saved.trim();
@@ -49,26 +50,20 @@ class ApiConfig {
   }
 
   static String get currentConfiguredUrl {
-    return _customBaseUrl ?? ((kIsWeb || defaultTargetPlatform == TargetPlatform.windows) ? defaultWebUrl : defaultCloudUrl);
+    return _customBaseUrl ?? serverUrl;
   }
 
   static String get baseUrl {
     if (_customBaseUrl != null && _customBaseUrl!.isNotEmpty) {
       return _customBaseUrl!;
     }
-    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
-      return defaultWebUrl;
-    }
-    return defaultCloudUrl;
+    return serverUrl;
   }
 
+  static const String liveAdminPortalUrl = 'https://mahima-tiffin-admin.onrender.com';
+
   static String get adminPortalUrl {
-    try {
-      final uri = Uri.parse(baseUrl);
-      return '${uri.scheme}://${uri.host}:5173';
-    } catch (_) {
-      return 'http://localhost:5173';
-    }
+    return liveAdminPortalUrl;
   }
   
   // Storage keys

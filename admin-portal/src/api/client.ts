@@ -5,15 +5,9 @@ export const getApiBaseUrl = (): string => {
   if (custom && custom.trim()) {
     return custom.trim();
   }
-  // When running in local browser, default to Vite proxy '/api' to talk to local backend
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    return import.meta.env.VITE_API_URL || '/api';
-  }
-  // In production (e.g. Render Static Site), use VITE_API_URL if it is an absolute URL
-  if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== '/api') {
+  if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http')) {
     return import.meta.env.VITE_API_URL;
   }
-  // Default to the live Render cloud backend
   return 'https://voice-app-0cys.onrender.com/api';
 };
 

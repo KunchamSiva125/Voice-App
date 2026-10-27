@@ -17,6 +17,8 @@ import 'manual_entry_screen.dart';
 import 'disambiguation_sheet.dart';
 import 'login_screen.dart';
 import '../widgets/tiffin_logo.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../config/api_config.dart';
 
 class HomeVoiceScreen extends StatefulWidget {
   const HomeVoiceScreen({Key? key}) : super(key: key);
@@ -378,6 +380,22 @@ class _HomeVoiceScreenState extends State<HomeVoiceScreen> with WidgetsBindingOb
                 context,
                 MaterialPageRoute(builder: (_) => const CustomerListScreen()),
               );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.admin_panel_settings, color: Color(0xFFF59E0B)),
+            tooltip: 'అడ్మిన్ పోర్టల్ (Admin Portal)',
+            onPressed: () async {
+              final uri = Uri.parse(ApiConfig.adminPortalUrl);
+              try {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } catch (_) {
+                try {
+                  await launchUrl(uri);
+                } catch (e) {
+                  debugPrint('Could not launch admin portal: $e');
+                }
+              }
             },
           ),
           IconButton(
